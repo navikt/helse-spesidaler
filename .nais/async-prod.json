@@ -1,0 +1,5 @@
+{
+  "kafkaPool": "nav-prod",
+  "tenant": "nav.no",
+  "consumerGroupId": "tbd-spesidaler-v1"
+}

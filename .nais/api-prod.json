@@ -1,0 +1,4 @@
+{
+  "ingresses": ["https://spesidaler.ansatt.nav.no","https://spesidaler.intern.nav.no"],
+  "tenant": "nav.no"
+}

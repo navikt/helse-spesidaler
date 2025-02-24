@@ -7,6 +7,15 @@ metadata:
     team: tbd
 spec:
   image: {{image}}
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_17
+        diskAutoresize: true
+        tier: {{tier}}
+        name: spesidaler
+        databases:
+          - name: spesidaler
+            envVarPrefix: DATABASE
   strategy:
     type: RollingUpdate
   replicas:

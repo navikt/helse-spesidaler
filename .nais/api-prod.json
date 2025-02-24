@@ -1,4 +1,5 @@
 {
   "ingresses": ["https://spesidaler.ansatt.nav.no","https://spesidaler.intern.nav.no"],
-  "tenant": "nav.no"
+  "tenant": "nav.no",
+  "tier": "db-custom-1-3840"
 }

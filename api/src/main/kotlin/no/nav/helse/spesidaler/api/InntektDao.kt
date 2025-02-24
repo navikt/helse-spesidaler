@@ -3,6 +3,7 @@ package no.nav.helse.spesidaler.api
 import com.github.navikt.tbd_libs.sql_dsl.connection
 import com.github.navikt.tbd_libs.sql_dsl.mapNotNull
 import com.github.navikt.tbd_libs.sql_dsl.prepareStatementWithNamedParameters
+import no.nav.helse.spesidaler.api.Beløp.Oppløsning.Periodisert
 import org.intellij.lang.annotations.Language
 import java.sql.Date
 import java.time.LocalDate
@@ -13,12 +14,13 @@ internal class InntektDao(private val dataSource: DataSource) {
     internal fun lagre(inntekt: InntektInn) {
         dataSource.connection {
             @Language("PostgreSQL")
-            val sql = "INSERT INTO inntekt (personident, kilde, daglig_beløp_ører, fom, tom) VALUES (:personident, :kilde, :dagligBeløpØrer, :fom, :tom)"
+            val sql = "INSERT INTO inntekt (personident, kilde, beløp_ører, beløp_oppløsning, fom, tom) VALUES (:personident, :kilde, :beløpØrer, CAST(:beløpOppløsning AS oppløsning), :fom, :tom)"
             prepareStatementWithNamedParameters(sql) {
                 withParameter("personident", inntekt.personident)
                 withParameter("kilde", inntekt.kilde)
-                withParameter("dagligBeløpØrer", inntekt.dagligBeløpØrer)
-                withParameter("fom") { columnIndex -> 
+                withParameter("beløpØrer", inntekt.beløp.ører)
+                withParameter("beløpOppløsning", inntekt.beløp.oppløsning.name)
+                withParameter("fom") { columnIndex ->
                     setDate(columnIndex, Date.valueOf(inntekt.fom))
                 }
                 if(inntekt.tom == null) {
@@ -55,7 +57,10 @@ internal class InntektDao(private val dataSource: DataSource) {
                             InntektUt(
                                 løpenummer = row.getLong("løpenummer"),
                                 kilde = row.getString("kilde"),
-                                dagligBeløpØrer = row.getInt("daglig_beløp_ører"),
+                                beløp = Beløp(
+                                    ører = row.getInt("beløp_ører"),
+                                    oppløsning = Beløp.Oppløsning.valueOf(row.getString("beløp_oppløsning"))
+                                ),
                                 fom = row.getDate("fom").toLocalDate(),
                                 tom = row.getDate("tom")?.toLocalDate()
                             )
@@ -70,19 +75,29 @@ internal class InntektDao(private val dataSource: DataSource) {
 internal data class InntektInn(
     val personident: String,
     val kilde: String,
-    val dagligBeløpØrer: Int,
+    val beløp: Beløp,
     val fom: LocalDate,
     val tom: LocalDate?,
 ) {
     init {
-        require((tom ?: fom) >= fom) {"Ugyldig input $fom til $tom"}
+        require((tom ?: fom) >= fom) { "Ugyldig input $fom til $tom" }
+        if (beløp.oppløsning == Periodisert) require(tom != null) { "For periodiserte inntekter må det settes en tom" }
     }
 }
 
 internal data class InntektUt(
     val løpenummer: Long,
     val kilde: String,
-    val dagligBeløpØrer: Int,
+    val beløp: Beløp,
     val fom: LocalDate,
     val tom: LocalDate?,
 )
+
+data class Beløp(
+    val ører: Int,
+    val oppløsning: Oppløsning
+) {
+    enum class Oppløsning {
+        Daglig, Månedlig, Årlig, Periodisert
+    }
+}

@@ -1,6 +1,8 @@
 package no.nav.helse.spesidaler.api
 
-import org.junit.jupiter.api.Assertions.*
+import no.nav.helse.spesidaler.api.Beløp.Oppløsning.Daglig
+import no.nav.helse.spesidaler.api.Beløp.Oppløsning.Periodisert
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
@@ -15,7 +17,7 @@ internal class InntektDaoTest() {
         val inntektInn = InntektInn(
             "fnr",
             "kilde",
-            200,
+            Beløp(200, Daglig),
             LocalDate.of(2018, 1, 1),
             LocalDate.of(2018, 1, 31)
         )
@@ -32,7 +34,7 @@ internal class InntektDaoTest() {
                 InntektUt(
                     1,
                     "kilde",
-                    200,
+                    Beløp(200, Daglig),
                     LocalDate.of(2018, 1, 1),
                     LocalDate.of(2018, 1, 31)
                 )
@@ -47,9 +49,22 @@ internal class InntektDaoTest() {
             InntektInn(
                 "fnr",
                 "kilde",
-                200,
+                Beløp(200, Daglig),
                 LocalDate.of(2018, 1, 31),
                 LocalDate.of(2018, 1, 1)
+            )
+        }
+    }
+
+    @Test
+    fun `tom kan ikke være null når beløpet er periodisert`() {
+        assertThrows<IllegalArgumentException> {
+            InntektInn(
+                "fnr",
+                "kilde",
+                Beløp(200, Periodisert),
+                LocalDate.of(2018, 1, 1),
+                null
             )
         }
     }

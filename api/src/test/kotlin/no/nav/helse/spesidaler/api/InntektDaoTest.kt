@@ -6,9 +6,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
-import javax.sql.DataSource
 
-internal class InntektDaoTest() {
+internal class InntektDaoTest {
 
     @Test
     fun `lagrer inntekt`() = databaseTest {
@@ -68,14 +67,4 @@ internal class InntektDaoTest() {
             )
         }
     }
-
-    private fun databaseTest(testblokk: (DataSource) -> Unit) {
-        val testDataSource = databaseContainer.nyTilkobling()
-        try {
-            testblokk(testDataSource.ds)
-        } finally {
-            databaseContainer.droppTilkobling(testDataSource)
-        }
-    }
-
 }

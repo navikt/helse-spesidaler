@@ -1,8 +1,6 @@
 package no.nav.helse.spesidaler.api
 
-import com.github.navikt.tbd_libs.sql_dsl.ParametersBuilder
 import com.github.navikt.tbd_libs.sql_dsl.connection
-import com.github.navikt.tbd_libs.sql_dsl.map
 import com.github.navikt.tbd_libs.sql_dsl.mapNotNull
 import com.github.navikt.tbd_libs.sql_dsl.prepareStatementWithNamedParameters
 import org.intellij.lang.annotations.Language
@@ -75,7 +73,11 @@ internal data class InntektInn(
     val dagligBeløpØrer: Int,
     val fom: LocalDate,
     val tom: LocalDate?,
-)
+) {
+    init {
+        require((tom ?: fom) >= fom) {"Ugyldig input $fom til $tom"}
+    }
+}
 
 internal data class InntektUt(
     val løpenummer: Long,

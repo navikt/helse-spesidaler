@@ -2,6 +2,7 @@ package no.nav.helse.spesidaler.api
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import javax.sql.DataSource
 
@@ -38,6 +39,19 @@ internal class InntektDaoTest() {
             ),
             lagredeInntekter
         )
+    }
+
+    @Test
+    fun `tom kan ikke være før fom`() {
+        assertThrows<IllegalArgumentException> {
+            InntektInn(
+                "fnr",
+                "kilde",
+                200,
+                LocalDate.of(2018, 1, 31),
+                LocalDate.of(2018, 1, 1)
+            )
+        }
     }
 
     private fun databaseTest(testblokk: (DataSource) -> Unit) {

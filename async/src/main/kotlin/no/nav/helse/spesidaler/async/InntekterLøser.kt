@@ -17,27 +17,27 @@ internal class InntekterLøser(
     init {
         River(rapidsConnection).apply {
             precondition { it.requireValue("@event_name", "behov") }
-            precondition { it.requireAll("@behov", listOf("Inntekter")) }
+            precondition { it.requireAll("@behov", listOf("InntekterForBeregning")) }
             precondition { it.forbid("@løsning") }
             validate { it.requireKey("fødselsnummer") }
-            validate { it.require("Inntekter.inntekterFom", JsonNode::asLocalDate) }
-            validate { it.require("Inntekter.inntekterTom", JsonNode::asLocalDate) }
+            validate { it.require("InntekterForBeregning.fom", JsonNode::asLocalDate) }
+            validate { it.require("InntekterForBeregning.tom", JsonNode::asLocalDate) }
         }.register(this)
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        sikkerlogg.info("Mottok behov for Inntekter:\n\t${packet.toJson()}")
+        sikkerlogg.info("Mottok behov for InntekterForBeregning:\n\t${packet.toJson()}")
         val personIdent = packet["fødselsnummer"].asText()
-        val fom = packet["Inntekter.inntekterFom"].asLocalDate()
-        val tom = packet["Inntekter.inntekterTom"].asLocalDate()
+        val fom = packet["InntekterForBeregning.fom"].asLocalDate()
+        val tom = packet["InntekterForBeregning.tom"].asLocalDate()
 
         packet["@løsning"] = mapOf(
-            "Inntekter" to mapOf(
+            "InntekterForBeregning" to mapOf(
                 "inntekter" to emptyList<Nothing>()
             )
         )
         context.publish(personIdent, packet.toJson()).also {
-            sikkerlogg.info("Sender løsning for Inntekter:\n\t${packet.toJson()}")
+            sikkerlogg.info("Sender løsning for InntekterForBeregning:\n\t${packet.toJson()}")
         }
     }
 

@@ -9,15 +9,15 @@ Per nå lagres:
 ```json
 {
   "@behov": [
-    "Inntekter" 
+    "InntekterForBeregning" 
   ],
   "fødselsnummer": "11111111111",
-  "Inntekter": {
-    "inntekterFom": "2018-01-01",
-    "inntekterTom": "2018-01-31"
+  "InntekterForBeregning": {
+    "fom": "2018-01-01",
+    "tom": "2018-01-31"
   },
   "@løsning": {
-    "Inntekter": {
+    "InntekterForBeregning": {
       "inntekter": [
         {
           "fom": "2018-01-01",

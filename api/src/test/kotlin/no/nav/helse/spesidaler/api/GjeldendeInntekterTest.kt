@@ -75,7 +75,52 @@ internal class GjeldendeInntekterTest {
         assertEquals(forventedeInntekter, gjeldendeInntekter)
     }
 
-    private fun settInn(ører: Int, fom: LocalDate, tom: LocalDate, dao: InntektDao, oppløsning: Beløp.Oppløsning = Daglig) {
+    @Test
+    fun `inntekter fra ulike kilder`() = databaseTest {
+        val dao = InntektDao(it)
+
+        val orgnummer1 = "999999999"
+        val orgnummer2 = "111111111"
+
+        settInn(400_000_000, 1.januar, 31.januar, dao, Beløp.Oppløsning.Årlig, orgnummer = orgnummer1)
+        settInn(100_000, 15.januar, 28.januar, dao, Beløp.Oppløsning.Månedlig, orgnummer = orgnummer2)
+
+        val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
+        val forventedeInntekter = setOf(
+            GjeldendeInntekt(orgnummer1, Periode(1.januar, 31.januar), Årlig(400_000_000)),
+            GjeldendeInntekt(orgnummer2, Periode(15.januar, 28.januar), Månedlig(100_000))
+        )
+
+        assertEquals(forventedeInntekter, gjeldendeInntekter)
+    }
+
+    @Test
+    fun `flere inntekter fra ulike kilder`() = databaseTest {
+        val dao = InntektDao(it)
+
+        val orgnummer1 = "999999999"
+        val orgnummer2 = "111111111"
+
+        settInn(400_000_000, 1.januar, 31.januar, dao, Beløp.Oppløsning.Årlig, orgnummer = orgnummer1)
+        settInn(1000, 20.januar, 23.januar, dao, Beløp.Oppløsning.Daglig, orgnummer = orgnummer1)
+
+        settInn(100_000, 15.januar, 28.januar, dao, Beløp.Oppløsning.Månedlig, orgnummer = orgnummer2)
+        settInn(3000, 20.januar, 28.januar, dao, Beløp.Oppløsning.Månedlig, orgnummer = orgnummer2)
+
+        val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
+        val forventedeInntekter = setOf(
+            GjeldendeInntekt(orgnummer1, Periode(1.januar, 19.januar), Årlig(400_000_000)),
+            GjeldendeInntekt(orgnummer1, Periode(20.januar, 23.januar), Daglig(1000)),
+            GjeldendeInntekt(orgnummer1, Periode(24.januar, 31.januar), Årlig(400_000_000)),
+
+            GjeldendeInntekt(orgnummer2, Periode(15.januar, 19.januar), Månedlig(100_000)),
+            GjeldendeInntekt(orgnummer2, Periode(20.januar, 28.januar), Månedlig(3000)),
+        )
+
+        assertEquals(forventedeInntekter, gjeldendeInntekter)
+    }
+
+    private fun settInn(ører: Int, fom: LocalDate, tom: LocalDate, dao: InntektDao, oppløsning: Beløp.Oppløsning = Daglig, orgnummer: String = this.orgnummer) {
         dao.lagre(InntektInn(personident, orgnummer, Beløp(ører, oppløsning), fom, tom))
     }
 

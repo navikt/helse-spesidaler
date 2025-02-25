@@ -67,4 +67,17 @@ internal class InntektDaoTest {
             )
         }
     }
+
+    @Test
+    fun `beløp kan ikke være mindre enn 0`() {
+        assertThrows<IllegalArgumentException> {
+            InntektInn(
+                "fnr",
+                "kilde",
+                Beløp(-100, Daglig),
+                LocalDate.of(2018, 1, 1),
+                LocalDate.of(2018, 1, 31)
+            )
+        }
+    }
 }

@@ -82,6 +82,7 @@ internal data class InntektInn(
     init {
         require((tom ?: fom) >= fom) { "Ugyldig input $fom til $tom" }
         if (beløp.oppløsning == Periodisert) require(tom != null) { "For periodiserte inntekter må det settes en tom" }
+        require(beløp.ører >= 0) { "Beløp kan ikke være mindre enn 0" }
     }
 }
 

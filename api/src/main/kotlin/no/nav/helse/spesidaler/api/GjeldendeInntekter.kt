@@ -1,5 +1,7 @@
 package no.nav.helse.spesidaler.api
 
+import java.time.Year
+import kotlin.math.roundToInt
 import no.nav.helse.spesidaler.api.Beløp.Oppløsning.*
 import no.nav.helse.spesidaler.api.Periode.Companion.trim
 
@@ -13,6 +15,17 @@ internal class GjeldendeInntekter(personident: String, periode: Periode, dao: In
         data class Daglig(override val ører: Int): Beløp
         data class Månedlig(override val ører: Int): Beløp
         data class Årlig(override val ører: Int): Beløp
+        data class Periodisert(override val ører: Int, val periode: Periode): Beløp {
+            /** Et Nav-år har 260 virkedager, men ekte år varierer mellom 260 og 262 virkedager.
+                Her vektes dagene utifra hvor mange virkedager det reelt er i året/årene
+                perioden dekker. Da beregnes et daglig beløp som videre kan tolkes som 1/260 Nav-dag **/
+            private val vektlagteVirkedager = periode
+                .groupBy { Year.of(it.year) }
+                .mapValues { (_, dager) -> dager.min() til dager.max() }
+                .map { (år, periode) -> (260.0 / år.virkedager) * periode.virkedager }
+                .reduce(Double::plus)
+            val daglig = Daglig((ører / vektlagteVirkedager).roundToInt())
+        }
     }
 
     private companion object {
@@ -31,7 +44,9 @@ internal class GjeldendeInntekter(personident: String, periode: Periode, dao: In
                         Daglig -> GjeldendeInntekt(inntektUt.kilde, overlapp, Beløp.Daglig(beløp))
                         Månedlig -> GjeldendeInntekt(inntektUt.kilde, overlapp, Beløp.Månedlig(beløp))
                         Årlig -> GjeldendeInntekt(inntektUt.kilde, overlapp, Beløp.Årlig(beløp))
-                        Periodisert -> error("Vi vet ikke om vi skal ha, eller hvordan vi skal håndtere, periodiserte inntekter")
+                        Periodisert -> GjeldendeInntekt(inntektUt.kilde, overlapp, Beløp.Periodisert(beløp, inntektUt.fom til checkNotNull(inntektUt.tom) {
+                            "En periodisert inntekt må ha en lukket periode (tom != null)"
+                        }))
                     }
                 }
             }

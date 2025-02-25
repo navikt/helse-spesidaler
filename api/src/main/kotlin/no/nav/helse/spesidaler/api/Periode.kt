@@ -1,10 +1,11 @@
 package no.nav.helse.spesidaler.api
 
+import java.time.DayOfWeek.SUNDAY
 import java.time.LocalDate
+import java.time.Year
 import java.time.format.DateTimeFormatter
 
-/**  Dette er bare en rå kopi fra spleis-modellkoden (fjernet unused ting) **/
-class Periode(fom: LocalDate, tom: LocalDate) : ClosedRange<LocalDate> {
+class Periode(fom: LocalDate, tom: LocalDate) : ClosedRange<LocalDate>, Iterable<LocalDate>  {
     override val start: LocalDate = fom
     override val endInclusive: LocalDate = tom
 
@@ -54,6 +55,30 @@ class Periode(fom: LocalDate, tom: LocalDate) : ClosedRange<LocalDate> {
     }
 
     override fun hashCode() = start.hashCode() + endInclusive.hashCode()
+
+    override operator fun iterator() = object : Iterator<LocalDate> {
+        private var currentDate: LocalDate = start
+
+        override fun hasNext() = endInclusive >= currentDate
+
+        override fun next() =
+            currentDate.also { currentDate = it.plusDays(1) }
+    }
+
+    // Antall virkedager i perioden
+    internal val virkedager get(): Int = run {
+        val fom = this.start
+        val tom = this.endInclusive.plusDays(1)
+        val epochStart = fom.toEpochDay()
+        val epochEnd = tom.toEpochDay()
+        if (epochStart >= epochEnd) return 0
+        val dagerMellom = (epochEnd - epochStart).toInt()
+        val heleHelger = (dagerMellom + fom.dayOfWeek.value - 1) / 7 * 2
+        val justerFørsteHelg = if (fom.dayOfWeek == SUNDAY) 1 else 0
+        val justerSisteHelg = if (tom.dayOfWeek == SUNDAY) 1 else 0
+        return dagerMellom - heleHelger + justerFørsteHelg - justerSisteHelg
+    }
 }
 
 infix fun LocalDate.til(tom: LocalDate) = Periode(this, tom)
+internal val Year.virkedager get() = (LocalDate.of(this.value, 1,1) til LocalDate.of(this.value, 12, 31)).virkedager

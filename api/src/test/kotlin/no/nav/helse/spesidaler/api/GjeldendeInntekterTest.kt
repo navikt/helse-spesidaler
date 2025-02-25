@@ -6,7 +6,6 @@ import no.nav.helse.spesidaler.api.GjeldendeInntekter.Beløp.*
 import no.nav.helse.spesidaler.api.GjeldendeInntekter.GjeldendeInntekt
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 
 internal class GjeldendeInntekterTest {
@@ -45,15 +44,22 @@ internal class GjeldendeInntekterTest {
     }
 
     @Test
-    fun `håndterer foreløpig ikke periodisert inntekt`() = databaseTest {
+    fun `håndterer også periodisert inntekt`() = databaseTest {
         val dao = InntektDao(it)
 
         settInn(4_000_000, 1.januar, 31.januar, dao, Periodisert)
         settInn(100_000, 15.januar, 28.januar, dao, Daglig)
 
-        assertThrows<IllegalStateException> {
-            GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
-        }
+        val forventetPeriodisertBeløp = Periodisert(4_000_000, 1.januar til 31.januar)
+
+        val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
+        val forventedeInntekter = setOf(
+            GjeldendeInntekt(orgnummer, Periode(1.januar, 14.januar), forventetPeriodisertBeløp),
+            GjeldendeInntekt(orgnummer, Periode(15.januar, 28.januar), Daglig(100_000)),
+            GjeldendeInntekt(orgnummer, Periode(29.januar, 31.januar), forventetPeriodisertBeløp),
+        )
+        assertEquals(forventedeInntekter, gjeldendeInntekter)
+        assertEquals(Daglig(174582), forventetPeriodisertBeløp.daglig)
     }
 
     @Test
@@ -123,6 +129,4 @@ internal class GjeldendeInntekterTest {
     private fun settInn(ører: Int, fom: LocalDate, tom: LocalDate, dao: InntektDao, oppløsning: Beløp.Oppløsning = Daglig, orgnummer: String = this.orgnummer) {
         dao.lagre(InntektInn(personident, orgnummer, Beløp(ører, oppløsning), fom, tom))
     }
-
-    private val Int.januar get() = LocalDate.of(2018, 1, this)
 }

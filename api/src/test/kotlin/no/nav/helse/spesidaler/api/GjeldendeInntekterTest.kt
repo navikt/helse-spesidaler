@@ -18,7 +18,7 @@ internal class GjeldendeInntekterTest {
 
             settInn(1000, 1.januar, 31.januar, dao)
 
-            val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
+            val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao)
             val forventedeInntekter = setOf(GjeldendeInntekt(orgnummer, Periode(1.januar, 31.januar), Daglig(1000)))
 
             assertEquals(forventedeInntekter, gjeldendeInntekter)
@@ -32,7 +32,7 @@ internal class GjeldendeInntekterTest {
         settInn(1000, 1.januar, 31.januar, dao)
         settInn(2000, 10.januar, 20.januar, dao)
 
-        val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
+        val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao)
         val forventedeInntekter = setOf(
             GjeldendeInntekt(orgnummer, Periode(1.januar, 9.januar), Daglig(1000)),
             GjeldendeInntekt(orgnummer, Periode(10.januar, 20.januar), Daglig(2000)),

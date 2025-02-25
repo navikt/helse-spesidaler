@@ -21,11 +21,29 @@ Per nå lagres:
       "inntekter": [
         {
           "fom": "2018-01-01",
-          "tom": "2018-01-31",
+          "tom": "2018-01-14",
           "kilde": "999999999",
           "beløp": {
             "ører": 10000,
             "oppløsning": "Daglig"
+          }
+        },
+        {
+          "fom": "2018-01-15",
+          "tom": "2018-01-31",
+          "kilde": "999999999",
+          "beløp": {
+            "ører": 20000,
+            "oppløsning": "Månedlig"
+          }
+        },
+        {
+          "fom": "2018-01-20",
+          "tom": "2018-01-25",
+          "kilde": "111111111",
+          "beløp": {
+            "ører": 40000,
+            "oppløsning": "Årlig"
           }
         }
       ]

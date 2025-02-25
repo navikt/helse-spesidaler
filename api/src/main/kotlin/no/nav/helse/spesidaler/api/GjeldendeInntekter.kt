@@ -1,15 +1,20 @@
 package no.nav.helse.spesidaler.api
 
-import no.nav.helse.spesidaler.api.Beløp.Oppløsning.Daglig
-import no.nav.helse.spesidaler.api.GjeldendeInntekter.GjeldendeInntekt
+import no.nav.helse.spesidaler.api.Beløp.Oppløsning.*
 import no.nav.helse.spesidaler.api.Periode.Companion.trim
 
-internal class GjeldendeInntekter(personident: String, periode: Periode, dao: InntektDao): Set<GjeldendeInntekt> by gjeldendeInntekter(personident, periode, dao) {
+internal class GjeldendeInntekter(personident: String, periode: Periode, dao: InntektDao) {
+    val inntekter = gjeldendeInntekter(personident, periode, dao)
+
     data class GjeldendeInntekt(val kilde: String, val periode: Periode, val beløp: Beløp)
+
     sealed interface Beløp {
         val ører: Int
         data class Daglig(override val ører: Int): Beløp
+        data class Månedlig(override val ører: Int): Beløp
+        data class Årlig(override val ører: Int): Beløp
     }
+
     private companion object {
         private fun gjeldendeInntekter(personident: String, periode: Periode, dao: InntektDao) = dao.hent(personident, periode)
             .groupBy { it.kilde }
@@ -21,8 +26,13 @@ internal class GjeldendeInntekter(personident: String, periode: Periode, dao: In
             .mapValues { (_, inntekterUt) ->
                 inntekterUt.map { inntektUt ->
                     val overlapp = Periode(inntektUt.fom, inntektUt.tom ?: periode.endInclusive).overlappendePeriode(periode) ?: error("Denne overlapper jo ikke?")
-                    val beløp = inntektUt.beløp.takeIf { it.oppløsning == Daglig } ?: error("Så langt har vi ikke kommet")
-                    GjeldendeInntekt(inntektUt.kilde, overlapp, Beløp.Daglig(beløp.ører))
+                    val beløp = inntektUt.beløp.ører
+                    when (inntektUt.beløp.oppløsning) {
+                        Daglig -> GjeldendeInntekt(inntektUt.kilde, overlapp, Beløp.Daglig(beløp))
+                        Månedlig -> GjeldendeInntekt(inntektUt.kilde, overlapp, Beløp.Månedlig(beløp))
+                        Årlig -> GjeldendeInntekt(inntektUt.kilde, overlapp, Beløp.Årlig(beløp))
+                        Periodisert -> error("Vi vet ikke om vi skal ha, eller hvordan vi skal håndtere, periodiserte inntekter")
+                    }
                 }
             }
             .mapValues { (_, gjeldendeInntekter) ->
@@ -37,6 +47,7 @@ internal class GjeldendeInntekter(personident: String, periode: Periode, dao: In
             }
             .values
             .flatten()
+            .filterNot { it.beløp.ører == 0 }
             .toSet()
     }
 }

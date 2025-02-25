@@ -19,5 +19,7 @@ fun main() {
     val kafkaConfig = AivenConfig.default
     val consumerProducerFactory = ConsumerProducerFactory(kafkaConfig)
 
-    RapidApplication.create(env, consumerProducerFactory = consumerProducerFactory).start()
+    RapidApplication.create(env, consumerProducerFactory = consumerProducerFactory).apply {
+        InntekterLøser(this)
+    }.start()
 }

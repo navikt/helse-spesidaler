@@ -1,11 +1,16 @@
 package no.nav.helse.spesidaler.api
 
 import com.github.navikt.tbd_libs.sql_dsl.connection
+import com.github.navikt.tbd_libs.sql_dsl.int
+import com.github.navikt.tbd_libs.sql_dsl.localDate
+import com.github.navikt.tbd_libs.sql_dsl.localDateOrNull
+import com.github.navikt.tbd_libs.sql_dsl.long
 import com.github.navikt.tbd_libs.sql_dsl.mapNotNull
 import com.github.navikt.tbd_libs.sql_dsl.prepareStatementWithNamedParameters
+import com.github.navikt.tbd_libs.sql_dsl.string
 import no.nav.helse.spesidaler.api.Beløp.Oppløsning.Periodisert
 import org.intellij.lang.annotations.Language
-import java.sql.Date
+import java.sql.PreparedStatement
 import java.time.LocalDate
 import javax.sql.DataSource
 
@@ -20,19 +25,10 @@ internal class InntektDao(private val dataSource: DataSource) {
                 withParameter("kilde", inntekt.kilde)
                 withParameter("beløpØrer", inntekt.beløp.ører)
                 withParameter("beløpOppløsning", inntekt.beløp.oppløsning.name)
-                withParameter("fom") { columnIndex ->
-                    setDate(columnIndex, Date.valueOf(inntekt.fom))
-                }
-                if(inntekt.tom == null) {
-                    withNull("tom")
-                } else {
-                    withParameter("tom") { columnIndex ->
-                        setDate(columnIndex, Date.valueOf(inntekt.tom))
-                    }    
-                }
-            }.use { 
-                it.execute()
-            }
+                withParameter("fom", inntekt.fom)
+                if (inntekt.tom == null) withNull("tom")
+                else withParameter("tom", inntekt.tom)
+            }.use(PreparedStatement::execute)
         }
     }
 
@@ -43,32 +39,21 @@ internal class InntektDao(private val dataSource: DataSource) {
 
             prepareStatementWithNamedParameters(sql) {
                 withParameter("personident", personident)
-                withParameter("fom") { columnIndex ->
-                    setDate(columnIndex, Date.valueOf(periode.start))
-                }
-                withParameter("tom") { columnIndex ->
-                    setDate(columnIndex, Date.valueOf(periode.endInclusive))
-                }
-            }.use {
-                it
-                    .executeQuery()
-                    .use { rs ->
-                        rs.mapNotNull { row ->
-                            InntektUt(
-                                løpenummer = row.getLong("løpenummer"),
-                                kilde = row.getString("kilde"),
-                                beløp = Beløp(
-                                    ører = row.getInt("beløp_ører"),
-                                    oppløsning = Beløp.Oppløsning.valueOf(row.getString("beløp_oppløsning"))
-                                ),
-                                fom = row.getDate("fom").toLocalDate(),
-                                tom = row.getDate("tom")?.toLocalDate()
-                            )
-                        }
-                    }
+                withParameter("fom", periode.start)
+                withParameter("tom", periode.endInclusive)
+            }.mapNotNull { row ->
+                InntektUt(
+                    løpenummer = row.long("løpenummer"),
+                    kilde = row.string("kilde"),
+                    beløp = Beløp(
+                        ører = row.int("beløp_ører"),
+                        oppløsning = Beløp.Oppløsning.valueOf(row.string("beløp_oppløsning"))
+                    ),
+                    fom = row.localDate("fom"),
+                    tom = row.localDateOrNull("tom")
+                )
             }
         }
-        
     }
 }
 

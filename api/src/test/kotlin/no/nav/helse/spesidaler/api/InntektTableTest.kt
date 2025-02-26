@@ -1,6 +1,7 @@
 package no.nav.helse.spesidaler.api
 
 import com.github.navikt.tbd_libs.sql_dsl.connection
+import java.sql.PreparedStatement
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import javax.sql.DataSource
@@ -45,7 +46,7 @@ internal class InntektTableTest {
 
     private fun DataSource.assertPSQLException(sql: String, forventetFeilmelding: String){
         val feilmelding = assertThrows<PSQLException> {
-            connection { prepareStatement(sql).use { it.execute() } }
+            connection { prepareStatement(sql).use(PreparedStatement::execute) }
         }.message ?: "n/a"
         assertTrue(feilmelding.contains(forventetFeilmelding)) { "Nei, feilen var faktisk $feilmelding" }
     }

@@ -8,9 +8,11 @@ import com.github.navikt.tbd_libs.naisful.test.naisfulTestApp
 import io.ktor.server.routing.*
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import io.mockk.mockk
 import org.junit.jupiter.api.Test
 
 class E2ETest {
+    private val inntektertjeneste = mockk<Inntektertjeneste>()
 
     @Test
     fun `starter app`() {
@@ -21,7 +23,7 @@ class E2ETest {
         naisfulTestApp(
             testApplicationModule = {
                 routing {
-                    api()
+                    api(inntektertjeneste)
                 }
             },
             objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule()),

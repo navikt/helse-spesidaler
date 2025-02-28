@@ -40,7 +40,7 @@ fun launchApp(env: Map<String, String>) {
     )
 
     val dataSourceBuilder = DataSourceBuilder(env)
-
+    val inntektertjeneste = Inntektertjeneste(InntektDao(dataSourceBuilder.dataSource))
 
     val meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, PrometheusRegistry.defaultRegistry, Clock.SYSTEM)
 
@@ -69,7 +69,7 @@ fun launchApp(env: Map<String, String>) {
 
         routing {
             authenticate {
-                api()
+                api(inntektertjeneste)
             }
         }
     }

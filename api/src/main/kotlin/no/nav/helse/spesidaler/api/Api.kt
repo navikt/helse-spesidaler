@@ -11,7 +11,7 @@ import java.time.LocalDate
 internal fun Route.api(inntektertjeneste: Inntektertjeneste) {
     post("/api/inntekter/gjeldende") {
         val request = call.receiveNullable<GjeldendeInntekterRequest>()
-            ?: throw BadRequestException("Mangler fødselsnummer eller fom")
+            ?: throw BadRequestException("Mangler fødselsnummer eller fom eller tom")
         val gjeldendeInntekter = inntektertjeneste.hentGjeldendeInntekter(request)
 
         val gjeldendeInntekterResponse = GjeldendeInntekterResponse(

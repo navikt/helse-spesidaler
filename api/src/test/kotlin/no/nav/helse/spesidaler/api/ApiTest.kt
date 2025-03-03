@@ -56,6 +56,19 @@ internal class ApiTest {
         }
     }
 
+    @Test
+    fun `hent inntekt, men på en dum måte`() = e2e(inntektertjeneste) {
+        client.post("/api/inntekter/gjeldende") {
+            contentType(Json)
+            setBody(mapOf(
+                "fødselsnummer" to "fnr",
+                "fom" to 1.januar,
+            ))
+        }.also { response ->
+            assertEquals(HttpStatusCode.BadRequest, response.status)
+        }
+    }
+
     private fun e2e(inntektertjeneste: Inntektertjeneste, testblokk: suspend TestContext.() -> Unit) {
         naisfulTestApp(
             testApplicationModule = {

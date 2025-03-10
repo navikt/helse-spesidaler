@@ -1,4 +1,4 @@
-package no.nav.helse.spesidaler.api
+package no.nav.helse.spesidaler.api.db
 
 import com.github.navikt.tbd_libs.sql_dsl.connection
 import com.github.navikt.tbd_libs.sql_dsl.intOrNull
@@ -8,15 +8,14 @@ import com.github.navikt.tbd_libs.sql_dsl.long
 import com.github.navikt.tbd_libs.sql_dsl.mapNotNull
 import com.github.navikt.tbd_libs.sql_dsl.prepareStatementWithNamedParameters
 import com.github.navikt.tbd_libs.sql_dsl.string
-import no.nav.helse.spesidaler.api.Beløp.Oppløsning.Periodisert
 import org.intellij.lang.annotations.Language
 import java.sql.PreparedStatement
-import java.time.LocalDate
 import javax.sql.DataSource
+import no.nav.helse.spesidaler.api.Periode
 
 internal class InntektDao(private val dataSource: DataSource) {
 
-    internal fun lagre(inntekt: InntektInn) {
+    internal fun lagre(inntekt: Db.InntektInn) {
         dataSource.connection {
             @Language("PostgreSQL")
             val sql = "INSERT INTO inntekt (personident, kilde, beløp_ører, beløp_oppløsning, fom, tom) VALUES (:personident, :kilde, :beløpØrer, CAST(:beløpOppløsning AS oppløsning), :fom, :tom)"
@@ -24,7 +23,7 @@ internal class InntektDao(private val dataSource: DataSource) {
                 withParameter("personident", inntekt.personident)
                 withParameter("kilde", inntekt.kilde)
                 withParameter("beløpØrer", inntekt.beløp.ører)
-                withParameter("beløpOppløsning", inntekt.beløp.oppløsning.name)
+                withParameter("beløpOppløsning", inntekt.beløp.oppløsning)
                 withParameter("fom", inntekt.fom)
                 if (inntekt.tom == null) withNull("tom")
                 else withParameter("tom", inntekt.tom)
@@ -32,7 +31,7 @@ internal class InntektDao(private val dataSource: DataSource) {
         }
     }
 
-    internal fun fjern(fjernInntekt: FjernInntekt) {
+    internal fun fjern(fjernInntekt: Db.FjernInntekt) {
         dataSource.connection {
             @Language("PostgreSQL")
             val sql = "INSERT INTO inntekt (personident, kilde, beløp_ører, beløp_oppløsning, fom, tom) VALUES (:personident, :kilde, NULL, CAST('Daglig' AS oppløsning), :fom, :tom)"
@@ -46,7 +45,7 @@ internal class InntektDao(private val dataSource: DataSource) {
         }
     }
 
-    internal fun hent(personident: String, periode: Periode): List<InntektUt> {
+    internal fun hent(personident: String, periode: Periode): List<Db.InntektUt> {
         return dataSource.connection {
             @Language("PostgreSQL")
             val sql = "SELECT * FROM inntekt WHERE personident = :personident AND fom >= :fom AND (tom IS NULL OR tom <= :tom)"
@@ -56,15 +55,10 @@ internal class InntektDao(private val dataSource: DataSource) {
                 withParameter("fom", periode.start)
                 withParameter("tom", periode.endInclusive)
             }.mapNotNull { row ->
-                InntektUt(
+                Db.InntektUt(
                     løpenummer = row.long("løpenummer"),
                     kilde = row.string("kilde"),
-                    beløp = row.intOrNull("beløp_ører")?.let { beløpIØrer ->
-                        Beløp(
-                            ører = beløpIØrer,
-                            oppløsning = Beløp.Oppløsning.valueOf(row.string("beløp_oppløsning"))
-                        )
-                    },
+                    beløp = row.intOrNull("beløp_ører")?.let { beløpIØrer -> Db.Beløp.gjenopprett(beløpIØrer, row.string("beløp_oppløsning")) },
                     fom = row.localDate("fom"),
                     tom = row.localDateOrNull("tom")
                 )
@@ -73,44 +67,3 @@ internal class InntektDao(private val dataSource: DataSource) {
     }
 }
 
-internal data class FjernInntekt(
-    val personident: String,
-    val kilde: String,
-    val fom: LocalDate,
-    val tom: LocalDate?
-) {
-    init {
-        require((tom ?: fom) >= fom) { "Ugyldig input $fom til $tom" }
-    }
-}
-
-internal data class InntektInn(
-    val personident: String,
-    val kilde: String,
-    val beløp: Beløp,
-    val fom: LocalDate,
-    val tom: LocalDate?,
-) {
-    init {
-        require((tom ?: fom) >= fom) { "Ugyldig input $fom til $tom" }
-        if (beløp.oppløsning == Periodisert) require(tom != null) { "For periodiserte inntekter må det settes en tom" }
-        require(beløp.ører >= 0) { "Beløp kan ikke være mindre enn 0" }
-    }
-}
-
-internal data class InntektUt(
-    val løpenummer: Long,
-    val kilde: String,
-    val beløp: Beløp?,
-    val fom: LocalDate,
-    val tom: LocalDate?,
-)
-
-data class Beløp(
-    val ører: Int,
-    val oppløsning: Oppløsning
-) {
-    enum class Oppløsning {
-        Daglig, Månedlig, Årlig, Periodisert
-    }
-}

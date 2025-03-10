@@ -1,11 +1,11 @@
 package no.nav.helse.spesidaler.api
 
-import no.nav.helse.spesidaler.api.Beløp.Oppløsning.Daglig
-import no.nav.helse.spesidaler.api.Beløp.Oppløsning.Periodisert
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
+import no.nav.helse.spesidaler.api.db.Db
+import no.nav.helse.spesidaler.api.db.InntektDao
 
 internal class InntektDaoTest {
 
@@ -13,10 +13,10 @@ internal class InntektDaoTest {
     fun `lagrer inntekt`() = databaseTest {
         val dao = InntektDao(it)
 
-        val inntektInn = InntektInn(
+        val inntektInn = Db.InntektInn(
             "fnr",
             "kilde",
-            Beløp(200, Daglig),
+            Db.Daglig(200),
             LocalDate.of(2018, 1, 1),
             LocalDate.of(2018, 1, 31)
         )
@@ -30,10 +30,10 @@ internal class InntektDaoTest {
 
         assertEquals(
             listOf(
-                InntektUt(
+                Db.InntektUt(
                     1,
                     "kilde",
-                    Beløp(200, Daglig),
+                    Db.Daglig(200),
                     LocalDate.of(2018, 1, 1),
                     LocalDate.of(2018, 1, 31)
                 )
@@ -45,10 +45,10 @@ internal class InntektDaoTest {
     @Test
     fun `tom kan ikke være før fom`() {
         assertThrows<IllegalArgumentException> {
-            InntektInn(
+            Db.InntektInn(
                 "fnr",
                 "kilde",
-                Beløp(200, Daglig),
+                Db.Daglig(200),
                 LocalDate.of(2018, 1, 31),
                 LocalDate.of(2018, 1, 1)
             )
@@ -58,10 +58,10 @@ internal class InntektDaoTest {
     @Test
     fun `tom kan ikke være null når beløpet er periodisert`() {
         assertThrows<IllegalArgumentException> {
-            InntektInn(
+            Db.InntektInn(
                 "fnr",
                 "kilde",
-                Beløp(200, Periodisert),
+                Db.Periodisert(200),
                 LocalDate.of(2018, 1, 1),
                 null
             )
@@ -71,10 +71,10 @@ internal class InntektDaoTest {
     @Test
     fun `beløp kan ikke være mindre enn 0`() {
         assertThrows<IllegalArgumentException> {
-            InntektInn(
+            Db.InntektInn(
                 "fnr",
                 "kilde",
-                Beløp(-100, Daglig),
+                Db.Daglig(-100),
                 LocalDate.of(2018, 1, 1),
                 LocalDate.of(2018, 1, 31)
             )

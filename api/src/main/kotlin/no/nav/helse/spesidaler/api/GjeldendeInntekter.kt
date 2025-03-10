@@ -2,8 +2,9 @@ package no.nav.helse.spesidaler.api
 
 import java.time.Year
 import kotlin.math.roundToInt
-import no.nav.helse.spesidaler.api.Beløp.Oppløsning.*
 import no.nav.helse.spesidaler.api.Periode.Companion.trim
+import no.nav.helse.spesidaler.api.db.Db
+import no.nav.helse.spesidaler.api.db.InntektDao
 
 internal class GjeldendeInntekter(personident: String, periode: Periode, dao: InntektDao) {
     val inntekter = gjeldendeInntekter(personident, periode, dao)
@@ -31,7 +32,7 @@ internal class GjeldendeInntekter(personident: String, periode: Periode, dao: In
     private companion object {
         private data class AktuellInntekt(
             val periode: Periode,
-            val inntektUt: InntektUt
+            val inntektUt: Db.InntektUt
         )
         private fun gjeldendeInntekter(personident: String, periode: Periode, dao: InntektDao) = dao.hent(personident, periode)
             // Må første grupper på inntektskilden ettersom de må vurderes hver for seg
@@ -67,11 +68,11 @@ internal class GjeldendeInntekter(personident: String, periode: Periode, dao: In
                     else GjeldendeInntekt(
                         kilde = it.inntektUt.kilde,
                         periode = it.periode,
-                        beløp = when (it.inntektUt.beløp.oppløsning) {
-                            Daglig -> Beløp.Daglig(beløpIØrer)
-                            Månedlig -> Beløp.Månedlig(beløpIØrer)
-                            Årlig -> Beløp.Årlig(beløpIØrer)
-                            Periodisert -> Beløp.Periodisert(beløpIØrer, it.inntektUt.fom til checkNotNull(it.inntektUt.tom) {
+                        beløp = when (it.inntektUt.beløp) {
+                            is Db.Daglig -> Beløp.Daglig(beløpIØrer)
+                            is Db.Månedlig -> Beløp.Månedlig(beløpIØrer)
+                            is Db.Årlig -> Beløp.Årlig(beløpIØrer)
+                            is Db.Periodisert -> Beløp.Periodisert(beløpIØrer, it.inntektUt.fom til checkNotNull(it.inntektUt.tom) {
                                 "En periodisert inntekt må ha en lukket periode (tom != null)"
                             })
                         }

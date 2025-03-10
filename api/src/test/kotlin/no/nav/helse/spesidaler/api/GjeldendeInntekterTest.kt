@@ -1,12 +1,12 @@
 package no.nav.helse.spesidaler.api
 
-import no.nav.helse.spesidaler.api.Beløp.Oppløsning.Daglig
-import no.nav.helse.spesidaler.api.Beløp.Oppløsning.Periodisert
 import no.nav.helse.spesidaler.api.GjeldendeInntekter.Beløp.*
 import no.nav.helse.spesidaler.api.GjeldendeInntekter.GjeldendeInntekt
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import no.nav.helse.spesidaler.api.db.Db
+import no.nav.helse.spesidaler.api.db.InntektDao
 
 internal class GjeldendeInntekterTest {
     private val orgnummer = "999999999"
@@ -17,7 +17,7 @@ internal class GjeldendeInntekterTest {
         databaseTest {
             val dao = InntektDao(it)
 
-            settInn(1000, 1.januar, 31.januar, dao)
+            settInn(Db.Daglig(1000), 1.januar, 31.januar, dao)
 
             val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
             val forventedeInntekter = setOf(GjeldendeInntekt(orgnummer, Periode(1.januar, 31.januar), Daglig(1000)))
@@ -30,8 +30,8 @@ internal class GjeldendeInntekterTest {
     fun `omsluttet ny inntekt gir gammel snute og hale, men ny mage`() = databaseTest {
         val dao = InntektDao(it)
 
-        settInn(1000, 1.januar, 31.januar, dao)
-        settInn(2000, 10.januar, 20.januar, dao)
+        settInn(Db.Daglig(1000), 1.januar, 31.januar, dao)
+        settInn(Db.Daglig(2000), 10.januar, 20.januar, dao)
 
         val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
         val forventedeInntekter = setOf(
@@ -47,8 +47,8 @@ internal class GjeldendeInntekterTest {
     fun `håndterer også periodisert inntekt`() = databaseTest {
         val dao = InntektDao(it)
 
-        settInn(4_000_000, 1.januar, 31.januar, dao, Periodisert)
-        settInn(100_000, 15.januar, 28.januar, dao, Daglig)
+        settInn(Db.Periodisert(4_000_000), 1.januar, 31.januar, dao)
+        settInn(Db.Daglig(100_000), 15.januar, 28.januar, dao)
 
         val forventetPeriodisertBeløp = Periodisert(4_000_000, 1.januar til 31.januar)
 
@@ -66,8 +66,8 @@ internal class GjeldendeInntekterTest {
     fun `inntekter med forskjellig oppløsning`() = databaseTest {
         val dao = InntektDao(it)
 
-        settInn(400_000_000, 1.januar, 31.januar, dao, Beløp.Oppløsning.Årlig)
-        settInn(100_000, 15.januar, 28.januar, dao, Beløp.Oppløsning.Månedlig)
+        settInn(Db.Årlig(400_000_000), 1.januar, 31.januar, dao)
+        settInn(Db.Månedlig(100_000), 15.januar, 28.januar, dao)
         fjern(20.januar, 20.januar, dao)
 
         val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
@@ -88,8 +88,8 @@ internal class GjeldendeInntekterTest {
         val orgnummer1 = "999999999"
         val orgnummer2 = "111111111"
 
-        settInn(400_000_000, 1.januar, 31.januar, dao, Beløp.Oppløsning.Årlig, orgnummer = orgnummer1)
-        settInn(100_000, 15.januar, 28.januar, dao, Beløp.Oppløsning.Månedlig, orgnummer = orgnummer2)
+        settInn(Db.Årlig(400_000_000), 1.januar, 31.januar, dao, orgnummer = orgnummer1)
+        settInn(Db.Månedlig(100_000), 15.januar, 28.januar, dao, orgnummer = orgnummer2)
 
         val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
         val forventedeInntekter = setOf(
@@ -107,9 +107,9 @@ internal class GjeldendeInntekterTest {
         val orgnummer1 = "999999999"
         val orgnummer2 = "111111111"
 
-        settInn(100_00, 1.januar, 31.januar, dao, Beløp.Oppløsning.Daglig, orgnummer = orgnummer1)
-        settInn(100_00, 1.januar, 31.januar, dao, Beløp.Oppløsning.Daglig, orgnummer = orgnummer2)
-        settInn(0, 1.januar, 31.januar, dao, Beløp.Oppløsning.Daglig, orgnummer = orgnummer1)
+        settInn(Db.Daglig(100_00), 1.januar, 31.januar, dao, orgnummer = orgnummer1)
+        settInn(Db.Daglig(100_00), 1.januar, 31.januar, dao, orgnummer = orgnummer2)
+        settInn(Db.Daglig(0), 1.januar, 31.januar, dao, orgnummer = orgnummer1)
         fjern(1.januar, 31.januar, dao, orgnummer2)
 
         val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
@@ -127,11 +127,11 @@ internal class GjeldendeInntekterTest {
         val orgnummer1 = "999999999"
         val orgnummer2 = "111111111"
 
-        settInn(400_000_000, 1.januar, 31.januar, dao, Beløp.Oppløsning.Årlig, orgnummer = orgnummer1)
-        settInn(1000, 20.januar, 23.januar, dao, Beløp.Oppløsning.Daglig, orgnummer = orgnummer1)
+        settInn(Db.Årlig(400_000_000), 1.januar, 31.januar, dao, orgnummer = orgnummer1)
+        settInn(Db.Daglig(1000), 20.januar, 23.januar, dao, orgnummer = orgnummer1)
 
-        settInn(100_000, 15.januar, 28.januar, dao, Beløp.Oppløsning.Månedlig, orgnummer = orgnummer2)
-        settInn(3000, 20.januar, 28.januar, dao, Beløp.Oppløsning.Månedlig, orgnummer = orgnummer2)
+        settInn(Db.Månedlig(100_000), 15.januar, 28.januar, dao, orgnummer = orgnummer2)
+        settInn(Db.Månedlig(3000), 20.januar, 28.januar, dao, orgnummer = orgnummer2)
 
         val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
         val forventedeInntekter = setOf(
@@ -146,10 +146,11 @@ internal class GjeldendeInntekterTest {
         assertEquals(forventedeInntekter, gjeldendeInntekter)
     }
 
-    private fun settInn(ører: Int, fom: LocalDate, tom: LocalDate, dao: InntektDao, oppløsning: Beløp.Oppløsning = Daglig, orgnummer: String = this.orgnummer) {
-        dao.lagre(InntektInn(personident, orgnummer, Beløp(ører, oppløsning), fom, tom))
+    private fun settInn(beløp: Db.Beløp, fom: LocalDate, tom: LocalDate, dao: InntektDao, orgnummer: String = this.orgnummer) {
+        dao.lagre(Db.InntektInn(personident, orgnummer, beløp, fom, tom))
     }
     private fun fjern(fom: LocalDate, tom: LocalDate?, dao: InntektDao, orgnummer: String = this.orgnummer) {
-        dao.fjern(FjernInntekt(personident, orgnummer, fom, tom))
+        dao.fjern(Db.FjernInntekt(personident, orgnummer, fom, tom))
     }
+
 }

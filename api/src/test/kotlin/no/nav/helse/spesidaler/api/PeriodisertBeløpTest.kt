@@ -1,6 +1,7 @@
 package no.nav.helse.spesidaler.api
 
 import kotlin.test.assertEquals
+import no.nav.helse.spesidaler.api.Periode.Companion.til
 import org.junit.jupiter.api.Test
 
 internal class PeriodisertBeløpTest {

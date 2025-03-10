@@ -13,16 +13,6 @@ class Periode(fom: LocalDate, tom: LocalDate) : ClosedRange<LocalDate>, Iterable
         require(start <= endInclusive) { "fom ($start) kan ikke være etter tom ($endInclusive)" }
     }
 
-    internal companion object {
-        private val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
-        internal fun Iterable<Periode>.trim(other: Periode): List<Periode> =
-            fold(listOf(other)) { result, trimperiode ->
-                result.dropLast(1) + (result.lastOrNull()?.trim(trimperiode) ?: emptyList())
-            }
-    }
-
-    internal fun overlapperMed(other: Periode) = overlappendePeriode(other) != null
-
     internal fun overlappendePeriode(other: Periode): Periode? {
         val start = maxOf(this.start, other.start)
         val slutt = minOf(this.endInclusive, other.endInclusive)
@@ -34,7 +24,16 @@ class Periode(fom: LocalDate, tom: LocalDate) : ClosedRange<LocalDate>, Iterable
         return start.format(formatter) + " til " + endInclusive.format(formatter)
     }
 
-    private fun trim(other: Periode): List<Periode> {
+    internal fun uten(perioder: Iterable<Periode>): List<Periode> {
+        return perioder.sortedBy { it.start }.fold(listOf(this)) { resultat, periodeSomSkalFjernes ->
+            when (val siste = resultat.lastOrNull()) {
+                null -> resultat
+                else -> resultat.dropLast(1) + siste.uten(periodeSomSkalFjernes)
+            }
+        }
+    }
+
+    private fun uten(other: Periode): List<Periode> {
         val felles = this.overlappendePeriode(other) ?: return listOf(this)
         return when {
             felles == this -> emptyList()
@@ -43,6 +42,7 @@ class Periode(fom: LocalDate, tom: LocalDate) : ClosedRange<LocalDate>, Iterable
             else -> listOf(this.beholdDagerFør(felles), this.beholdDagerEtter(felles))
         }
     }
+
 
     private fun beholdDagerFør(other: Periode) = this.start til other.start.minusDays(1)
 
@@ -61,8 +61,7 @@ class Periode(fom: LocalDate, tom: LocalDate) : ClosedRange<LocalDate>, Iterable
 
         override fun hasNext() = endInclusive >= currentDate
 
-        override fun next() =
-            currentDate.also { currentDate = it.plusDays(1) }
+        override fun next() = currentDate.also { currentDate = it.plusDays(1) }
     }
 
     // Antall virkedager i perioden
@@ -78,7 +77,15 @@ class Periode(fom: LocalDate, tom: LocalDate) : ClosedRange<LocalDate>, Iterable
         val justerSisteHelg = if (tom.dayOfWeek == SUNDAY) 1 else 0
         return dagerMellom - heleHelger + justerFørsteHelg - justerSisteHelg
     }
+
+    internal companion object {
+        private val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        infix fun LocalDate.til(tom: LocalDate) = Periode(this, tom)
+        internal val Year.virkedager get() = (LocalDate.of(this.value, 1,1) til LocalDate.of(this.value, 12, 31)).virkedager
+        internal fun periodeOrNull(fom: LocalDate, tom: LocalDate): Periode? {
+            if (tom < fom) return null
+            return fom til tom
+        }
+    }
 }
 
-infix fun LocalDate.til(tom: LocalDate) = Periode(this, tom)
-internal val Year.virkedager get() = (LocalDate.of(this.value, 1,1) til LocalDate.of(this.value, 12, 31)).virkedager

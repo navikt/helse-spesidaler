@@ -3,6 +3,8 @@ package no.nav.helse.spesidaler.api
 import java.time.LocalDate
 import java.time.Year
 import kotlin.math.roundToInt
+import no.nav.helse.spesidaler.api.Periode.Companion.til
+import no.nav.helse.spesidaler.api.Periode.Companion.virkedager
 
 @JvmInline value class Personident(val id: String) {
     init { check(id.isNotBlank()) { "Ugyldig personident!" }}

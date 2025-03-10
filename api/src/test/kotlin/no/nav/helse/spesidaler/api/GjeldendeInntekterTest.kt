@@ -8,6 +8,7 @@ import no.nav.helse.spesidaler.api.Beløp.Daglig
 import no.nav.helse.spesidaler.api.Beløp.Månedlig
 import no.nav.helse.spesidaler.api.Beløp.Periodisert
 import no.nav.helse.spesidaler.api.Beløp.Årlig
+import no.nav.helse.spesidaler.api.Periode.Companion.til
 import no.nav.helse.spesidaler.api.db.Db
 import no.nav.helse.spesidaler.api.db.InntektDao
 

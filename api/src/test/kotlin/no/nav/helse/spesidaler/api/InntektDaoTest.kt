@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
+import no.nav.helse.spesidaler.api.Periode.Companion.til
 import no.nav.helse.spesidaler.api.db.Db
 import no.nav.helse.spesidaler.api.db.InntektDao
 

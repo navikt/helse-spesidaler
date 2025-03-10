@@ -1,5 +1,6 @@
 package no.nav.helse.spesidaler.api
 
+import no.nav.helse.spesidaler.api.Periode.Companion.til
 import no.nav.helse.spesidaler.api.db.InntektDao
 
 internal class Inntektertjeneste(private val inntektDao: InntektDao) {

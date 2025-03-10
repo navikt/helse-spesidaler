@@ -1,11 +1,13 @@
 package no.nav.helse.spesidaler.api
 
+import com.github.navikt.tbd_libs.sql_dsl.connection
+import javax.sql.DataSource
 import no.nav.helse.spesidaler.api.Periode.Companion.periodeOrNull
 import no.nav.helse.spesidaler.api.db.Db
-import no.nav.helse.spesidaler.api.db.InntektDao
+import no.nav.helse.spesidaler.api.db.InntektDao.hent
 
-internal class GjeldendeInntekter(personident: Personident, periode: Periode, dao: InntektDao) {
-    val inntekter = gjeldendeInntekter(personident, periode, dao)
+internal class GjeldendeInntekter(personident: Personident, periode: Periode, dataSource: DataSource) {
+    val inntekter = gjeldendeInntekter(personident, periode, dataSource)
 
     data class GjeldendeInntekt(val kilde: Inntektskilde, val periode: Periode, val beløp: Beløp)
 
@@ -14,7 +16,7 @@ internal class GjeldendeInntekter(personident: Personident, periode: Periode, da
             val periode: Periode,
             val inntektUt: Db.InntektUt
         )
-        private fun gjeldendeInntekter(personident: Personident, periode: Periode, dao: InntektDao) = dao.hent(personident, periode)
+        private fun gjeldendeInntekter(personident: Personident, periode: Periode, dataSource: DataSource) = dataSource.connection { hent(personident, periode) }
             // Må første gruppere på inntektskilden ettersom de må vurderes hver for seg
             .groupBy { it.kilde }
             // Sorterer inntektene på løpenummeret slik at vi ser på det nyeste informasjonen først

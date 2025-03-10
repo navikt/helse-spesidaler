@@ -39,4 +39,7 @@ data class ÅpenPeriode(
         tom?.let { Periode(fom, it) } // Validerer perioden om tom er satt
     }
     fun lukketPeriode() = fom til checkNotNull(tom) { "Åpen periode har ikke 'tom' satt og kan således ikke gjøres om til en lukket periode!" }
+    internal companion object {
+        infix fun LocalDate.tilÅpen(tom: LocalDate?) = ÅpenPeriode(this, tom)
+    }
 }

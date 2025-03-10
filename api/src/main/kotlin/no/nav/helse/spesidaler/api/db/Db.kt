@@ -15,10 +15,10 @@ internal object Db {
         val personident: Personident,
         val kilde: Inntektskilde,
         val beløp: Beløp,
-        val åpenPeriode: ÅpenPeriode
+        val periode: ÅpenPeriode
     ) {
         init {
-            if (beløp is Periodisert) require(åpenPeriode.tom != null) { "For periodiserte inntekter må det settes en tom" }
+            if (beløp is Periodisert) require(periode.tom != null) { "For periodiserte inntekter må det settes en tom" }
             require(beløp.ører >= 0) { "Beløp kan ikke være mindre enn 0" }
         }
     }

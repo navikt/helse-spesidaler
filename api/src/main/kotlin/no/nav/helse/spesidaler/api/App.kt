@@ -41,7 +41,7 @@ fun launchApp(env: Map<String, String>) {
     )
 
     val dataSourceBuilder = DataSourceBuilder(env)
-    val inntektertjeneste = Inntektertjeneste(InntektDao(dataSourceBuilder.dataSource))
+    val inntektertjeneste = Inntektertjeneste(dataSourceBuilder.dataSource)
 
     val meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, PrometheusRegistry.defaultRegistry, Clock.SYSTEM)
 

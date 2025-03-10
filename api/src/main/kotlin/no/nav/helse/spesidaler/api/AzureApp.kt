@@ -10,10 +10,15 @@ class AzureApp(
     private val clientId: String,
 ) {
     fun konfigurerJwtAuth(config: AuthenticationConfig) {
-        config.jwt {
+        config.endepunkt("inntektsendringer")
+        config.endepunkt("inntekter-for-beregning")
+    }
+    private fun AuthenticationConfig.endepunkt(endpunkt: String) {
+        jwt(endpunkt) {
             verifier(jwkProvider, issuer) {
                 withAudience(clientId)
                 withClaimPresence("azp_name")
+                withArrayClaim("roles", endpunkt)
             }
             validate { credentials ->
                 JWTPrincipal(credentials.payload)

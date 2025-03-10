@@ -49,6 +49,10 @@ spec:
     inbound:
       rules:
         - application: spesidaler-async
+          permissions:
+            roles:
+              - "inntekter-for-beregning"
+              - "inntektsendringer"
   ingresses:
     {{#each ingresses }}
     - "{{this}}"

@@ -7,6 +7,7 @@ val mockKVersion = "1.13.9"
 val flywayCoreVersion = "11.3.3"
 val hikariCPVersion = "6.2.1"
 val postgresqlVersion = "42.7.5"
+val jsonAssertVersion = "1.5.3"
 
 dependencies {
     api("ch.qos.logback:logback-classic:$logbackClassicVersion")
@@ -27,10 +28,8 @@ dependencies {
 
     testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:$tbdLibsVersion")
     testImplementation("com.github.navikt.tbd-libs:naisful-test-app:$tbdLibsVersion")
-    testImplementation("com.github.navikt.tbd-libs:mock-http-client:$tbdLibsVersion")
-    testImplementation("io.mockk:mockk:$mockKVersion")
-
-    testImplementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    testImplementation("com.github.navikt.tbd-libs:signed-jwt-issuer-test:$tbdLibsVersion")
+    testImplementation("org.skyscreamer:jsonassert:$jsonAssertVersion")
 }
 
 tasks {

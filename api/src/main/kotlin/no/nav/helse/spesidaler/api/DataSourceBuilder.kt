@@ -2,10 +2,16 @@ package no.nav.helse.spesidaler.api
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import javax.sql.DataSource
 import org.flywaydb.core.Flyway
 import org.slf4j.LoggerFactory
 
-internal class DataSourceBuilder(env: Map<String, String>) {
+internal interface DataSourceBuilder {
+    val dataSource: DataSource
+    fun migrate()
+}
+
+internal class DefaultDataSourceBuilder(env: Map<String, String>): DataSourceBuilder {
 
     private val baseConnectionConfig = HikariConfig().apply {
         jdbcUrl = env.getValue("DATABASE_JDBC_URL")
@@ -20,9 +26,9 @@ internal class DataSourceBuilder(env: Map<String, String>) {
         maximumPoolSize = 2
     }
 
-    val dataSource by lazy { HikariDataSource(appConfig) }
+    override val dataSource by lazy { HikariDataSource(appConfig) }
 
-    internal fun migrate() {
+    override fun migrate() {
         logger.info("Migrerer database")
         HikariDataSource(migrationConfig).use {
             Flyway.configure()

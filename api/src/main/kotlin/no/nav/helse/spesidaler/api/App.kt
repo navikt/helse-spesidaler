@@ -16,7 +16,8 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.prometheus.metrics.model.registry.PrometheusRegistry
 import org.slf4j.LoggerFactory
 import java.net.URI
-import no.nav.helse.spesidaler.api.db.InntektDao
+import no.nav.helse.spesidaler.api.rest_api.InntekterForBeregningApi
+import no.nav.helse.spesidaler.api.rest_api.InntektsendringerApi
 
 private val logg = LoggerFactory.getLogger(::main.javaClass)
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
@@ -30,23 +31,8 @@ fun main() {
         sikkerlogg.error("Ufanget exception: {}", e.message, e)
     }
 
-    launchApp(System.getenv())
-}
-
-fun launchApp(env: Map<String, String>) {
-    val azureApp = AzureApp(
-        jwkProvider = JwkProviderBuilder(URI(env.getValue("AZURE_OPENID_CONFIG_JWKS_URI")).toURL()).build(),
-        issuer = env.getValue("AZURE_OPENID_CONFIG_ISSUER"),
-        clientId = env.getValue("AZURE_APP_CLIENT_ID"),
-    )
-
-    val dataSourceBuilder = DataSourceBuilder(env)
-    val inntektertjeneste = Inntektertjeneste(dataSourceBuilder.dataSource)
-
-    val meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, PrometheusRegistry.defaultRegistry, Clock.SYSTEM)
-
     val app = naisApp(
-        meterRegistry = meterRegistry,
+        meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT, PrometheusRegistry.defaultRegistry, Clock.SYSTEM),
         objectMapper = objectmapper,
         applicationLogger = logg,
         callLogger = LoggerFactory.getLogger("no.nav.helse.spesidaler.api.CallLogging"),
@@ -62,17 +48,29 @@ fun launchApp(env: Map<String, String>) {
             "konsument" to { call: ApplicationCall -> call.request.header("L5d-Client-Id") }
         ),
     ) {
-        authentication { azureApp.konfigurerJwtAuth(this) }
-
-        monitor.subscribe(ApplicationStarted) {
-            dataSourceBuilder.migrate()
-        }
-
-        routing {
-            authenticate {
-                api(inntektertjeneste)
-            }
-        }
+        spesidaler(System.getenv())
     }
     app.start(wait = true)
+}
+
+internal fun Application.spesidaler(
+    env: Map<String, String>,
+    dataSourceBuilder: DataSourceBuilder = DefaultDataSourceBuilder(env)
+) {
+    val azureApp = AzureApp(
+        jwkProvider = JwkProviderBuilder(URI(env.getValue("AZURE_OPENID_CONFIG_JWKS_URI")).toURL()).build(),
+        issuer = env.getValue("AZURE_OPENID_CONFIG_ISSUER"),
+        clientId = env.getValue("AZURE_APP_CLIENT_ID"),
+    )
+
+    authentication { azureApp.konfigurerJwtAuth(this) }
+
+    monitor.subscribe(ApplicationStarted) {
+        dataSourceBuilder.migrate()
+    }
+
+    routing {
+        authenticate("inntektsendringer") { InntektsendringerApi { dataSourceBuilder.dataSource } }
+        authenticate("inntekter-for-beregning") { InntekterForBeregningApi { dataSourceBuilder.dataSource } }
+    }
 }

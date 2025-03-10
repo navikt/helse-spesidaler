@@ -1,16 +1,19 @@
 package no.nav.helse.spesidaler.api
 
-import no.nav.helse.spesidaler.api.GjeldendeInntekter.Beløp.*
 import no.nav.helse.spesidaler.api.GjeldendeInntekter.GjeldendeInntekt
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import no.nav.helse.spesidaler.api.Beløp.Daglig
+import no.nav.helse.spesidaler.api.Beløp.Månedlig
+import no.nav.helse.spesidaler.api.Beløp.Periodisert
+import no.nav.helse.spesidaler.api.Beløp.Årlig
 import no.nav.helse.spesidaler.api.db.Db
 import no.nav.helse.spesidaler.api.db.InntektDao
 
 internal class GjeldendeInntekterTest {
-    private val orgnummer = "999999999"
-    private val personident = "11111111111"
+    private val orgnummer = Inntektskilde("999999999")
+    private val personident = Personident("11111111111")
 
     @Test
     fun `ingen overlappende perioder`() {
@@ -85,11 +88,11 @@ internal class GjeldendeInntekterTest {
     fun `inntekter fra ulike kilder`() = databaseTest {
         val dao = InntektDao(it)
 
-        val orgnummer1 = "999999999"
-        val orgnummer2 = "111111111"
+        val orgnummer1 = Inntektskilde("999999999")
+        val orgnummer2 = Inntektskilde("111111111")
 
-        settInn(Db.Årlig(400_000_000), 1.januar, 31.januar, dao, orgnummer = orgnummer1)
-        settInn(Db.Månedlig(100_000), 15.januar, 28.januar, dao, orgnummer = orgnummer2)
+        settInn(Db.Årlig(400_000_000), 1.januar, 31.januar, dao, inntektskilde = orgnummer1)
+        settInn(Db.Månedlig(100_000), 15.januar, 28.januar, dao, inntektskilde = orgnummer2)
 
         val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
         val forventedeInntekter = setOf(
@@ -104,12 +107,12 @@ internal class GjeldendeInntekterTest {
     fun `å sette inntekten til 0 kroner er noe annet enn å fjerne inntekten`() = databaseTest {
         val dao = InntektDao(it)
 
-        val orgnummer1 = "999999999"
-        val orgnummer2 = "111111111"
+        val orgnummer1 = Inntektskilde("999999999")
+        val orgnummer2 = Inntektskilde("111111111")
 
-        settInn(Db.Daglig(100_00), 1.januar, 31.januar, dao, orgnummer = orgnummer1)
-        settInn(Db.Daglig(100_00), 1.januar, 31.januar, dao, orgnummer = orgnummer2)
-        settInn(Db.Daglig(0), 1.januar, 31.januar, dao, orgnummer = orgnummer1)
+        settInn(Db.Daglig(100_00), 1.januar, 31.januar, dao, inntektskilde = orgnummer1)
+        settInn(Db.Daglig(100_00), 1.januar, 31.januar, dao, inntektskilde = orgnummer2)
+        settInn(Db.Daglig(0), 1.januar, 31.januar, dao, inntektskilde = orgnummer1)
         fjern(1.januar, 31.januar, dao, orgnummer2)
 
         val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
@@ -124,14 +127,14 @@ internal class GjeldendeInntekterTest {
     fun `flere inntekter fra ulike kilder`() = databaseTest {
         val dao = InntektDao(it)
 
-        val orgnummer1 = "999999999"
-        val orgnummer2 = "111111111"
+        val orgnummer1 = Inntektskilde("999999999")
+        val orgnummer2 = Inntektskilde("111111111")
 
-        settInn(Db.Årlig(400_000_000), 1.januar, 31.januar, dao, orgnummer = orgnummer1)
-        settInn(Db.Daglig(1000), 20.januar, 23.januar, dao, orgnummer = orgnummer1)
+        settInn(Db.Årlig(400_000_000), 1.januar, 31.januar, dao, inntektskilde = orgnummer1)
+        settInn(Db.Daglig(1000), 20.januar, 23.januar, dao, inntektskilde = orgnummer1)
 
-        settInn(Db.Månedlig(100_000), 15.januar, 28.januar, dao, orgnummer = orgnummer2)
-        settInn(Db.Månedlig(3000), 20.januar, 28.januar, dao, orgnummer = orgnummer2)
+        settInn(Db.Månedlig(100_000), 15.januar, 28.januar, dao, inntektskilde = orgnummer2)
+        settInn(Db.Månedlig(3000), 20.januar, 28.januar, dao, inntektskilde = orgnummer2)
 
         val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
         val forventedeInntekter = setOf(
@@ -146,11 +149,10 @@ internal class GjeldendeInntekterTest {
         assertEquals(forventedeInntekter, gjeldendeInntekter)
     }
 
-    private fun settInn(beløp: Db.Beløp, fom: LocalDate, tom: LocalDate, dao: InntektDao, orgnummer: String = this.orgnummer) {
-        dao.lagre(Db.InntektInn(personident, orgnummer, beløp, fom, tom))
+    private fun settInn(beløp: Db.Beløp, fom: LocalDate, tom: LocalDate, dao: InntektDao, inntektskilde: Inntektskilde = this.orgnummer) {
+        dao.lagre(Db.InntektInn(personident, inntektskilde, beløp, ÅpenPeriode(fom, tom)))
     }
-    private fun fjern(fom: LocalDate, tom: LocalDate?, dao: InntektDao, orgnummer: String = this.orgnummer) {
-        dao.fjern(Db.FjernInntekt(personident, orgnummer, fom, tom))
+    private fun fjern(fom: LocalDate, tom: LocalDate?, dao: InntektDao, inntektskilde: Inntektskilde = this.orgnummer) {
+        dao.fjern(Db.FjernInntekt(personident, inntektskilde, ÅpenPeriode(fom, tom)))
     }
-
 }

@@ -31,9 +31,9 @@ internal class ApiTest {
             inntektertjeneste.hentGjeldendeInntekter(eq(GjeldendeInntekterRequest("fnr", 1.januar, 31.januar)))
         } returns setOf(
             GjeldendeInntekter.GjeldendeInntekt(
-            kilde = "orgnr",
+            kilde = Inntektskilde("orgnr"),
             periode = 10.januar til 31.januar,
-            beløp = GjeldendeInntekter.Beløp.Månedlig(40000)
+            beløp = Beløp.Månedlig(40000)
         ))
 
         client.post("/api/inntekter/gjeldende") {

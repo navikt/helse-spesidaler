@@ -18,15 +18,15 @@ internal fun Route.api(inntektertjeneste: Inntektertjeneste) {
             fødselsnummer = request.fødselsnummer,
             gjeldendeInntekter = gjeldendeInntekter.map {
                 GjeldendeInntekterResponse.GjeldendeInntekt(
-                    kilde = it.kilde,
+                    kilde = it.kilde.id,
                     fom = it.periode.start,
                     tom = it.periode.endInclusive,
                     ører = it.beløp.ører,
                     oppløsning = when (it.beløp) {
-                        is GjeldendeInntekter.Beløp.Daglig -> GjeldendeInntekterResponse.GjeldendeInntekt.Oppløsning.Daglig
-                        is GjeldendeInntekter.Beløp.Månedlig -> GjeldendeInntekterResponse.GjeldendeInntekt.Oppløsning.Månedlig
-                        is GjeldendeInntekter.Beløp.Periodisert -> GjeldendeInntekterResponse.GjeldendeInntekt.Oppløsning.Årlig
-                        is GjeldendeInntekter.Beløp.Årlig -> GjeldendeInntekterResponse.GjeldendeInntekt.Oppløsning.Periodisert
+                        is Beløp.Daglig -> GjeldendeInntekterResponse.GjeldendeInntekt.Oppløsning.Daglig
+                        is Beløp.Månedlig -> GjeldendeInntekterResponse.GjeldendeInntekt.Oppløsning.Månedlig
+                        is Beløp.Periodisert -> GjeldendeInntekterResponse.GjeldendeInntekt.Oppløsning.Årlig
+                        is Beløp.Årlig -> GjeldendeInntekterResponse.GjeldendeInntekt.Oppløsning.Periodisert
                     }
                 )
             }

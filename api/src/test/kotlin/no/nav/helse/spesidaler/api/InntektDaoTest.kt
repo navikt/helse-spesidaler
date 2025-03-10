@@ -14,28 +14,32 @@ internal class InntektDaoTest {
         val dao = InntektDao(it)
 
         val inntektInn = Db.InntektInn(
-            "fnr",
-            "kilde",
-            Db.Daglig(200),
-            LocalDate.of(2018, 1, 1),
-            LocalDate.of(2018, 1, 31)
+            personident = Personident("fnr"),
+            kilde = Inntektskilde("kilde"),
+            beløp = Db.Daglig(200),
+            åpenPeriode = ÅpenPeriode(
+                fom = LocalDate.of(2018, 1, 1),
+                tom = LocalDate.of(2018, 1, 31)
+            )
         )
 
         dao.lagre(inntektInn)
 
         val lagredeInntekter = dao.hent(
-            "fnr",
-            LocalDate.of(2018, 1, 1) til LocalDate.of(2018, 1, 31)
+            personident = Personident("fnr"),
+            periode = LocalDate.of(2018, 1, 1) til LocalDate.of(2018, 1, 31)
         )
 
         assertEquals(
             listOf(
                 Db.InntektUt(
-                    1,
-                    "kilde",
-                    Db.Daglig(200),
-                    LocalDate.of(2018, 1, 1),
-                    LocalDate.of(2018, 1, 31)
+                    løpenummer = 1,
+                    kilde = Inntektskilde("kilde"),
+                    beløp = Db.Daglig(200),
+                    periode = ÅpenPeriode(
+                        fom = LocalDate.of(2018, 1, 1),
+                        tom = LocalDate.of(2018, 1, 31)
+                    )
                 )
             ),
             lagredeInntekter
@@ -46,11 +50,13 @@ internal class InntektDaoTest {
     fun `tom kan ikke være før fom`() {
         assertThrows<IllegalArgumentException> {
             Db.InntektInn(
-                "fnr",
-                "kilde",
-                Db.Daglig(200),
-                LocalDate.of(2018, 1, 31),
-                LocalDate.of(2018, 1, 1)
+                personident = Personident("fnr"),
+                kilde = Inntektskilde("kilde"),
+                beløp = Db.Daglig(200),
+                åpenPeriode = ÅpenPeriode(
+                    fom = LocalDate.of(2018, 1, 31),
+                    tom = LocalDate.of(2018, 1, 1)
+                )
             )
         }
     }
@@ -59,11 +65,13 @@ internal class InntektDaoTest {
     fun `tom kan ikke være null når beløpet er periodisert`() {
         assertThrows<IllegalArgumentException> {
             Db.InntektInn(
-                "fnr",
-                "kilde",
-                Db.Periodisert(200),
-                LocalDate.of(2018, 1, 1),
-                null
+                personident = Personident("fnr"),
+                kilde = Inntektskilde("kilde"),
+                beløp = Db.Periodisert(200),
+                åpenPeriode = ÅpenPeriode(
+                    fom = LocalDate.of(2018, 1, 1),
+                    tom = null
+                )
             )
         }
     }
@@ -72,11 +80,13 @@ internal class InntektDaoTest {
     fun `beløp kan ikke være mindre enn 0`() {
         assertThrows<IllegalArgumentException> {
             Db.InntektInn(
-                "fnr",
-                "kilde",
-                Db.Daglig(-100),
-                LocalDate.of(2018, 1, 1),
-                LocalDate.of(2018, 1, 31)
+                personident = Personident("fnr"),
+                kilde = Inntektskilde("kilde"),
+                beløp = Db.Daglig(-100),
+                åpenPeriode = ÅpenPeriode(
+                    fom = LocalDate.of(2018, 1, 1),
+                    tom = LocalDate.of(2018, 1, 31)
+                )
             )
         }
     }

@@ -1,39 +1,33 @@
 package no.nav.helse.spesidaler.api.db
 
-import java.time.LocalDate
+import no.nav.helse.spesidaler.api.Inntektskilde
+import no.nav.helse.spesidaler.api.Personident
+import no.nav.helse.spesidaler.api.ÅpenPeriode
 
 internal object Db {
     data class FjernInntekt(
-        val personident: String,
-        val kilde: String,
-        val fom: LocalDate,
-        val tom: LocalDate?
-    ) {
-        init {
-            require((tom ?: fom) >= fom) { "Ugyldig input $fom til $tom" }
-        }
-    }
+        val personident: Personident,
+        val kilde: Inntektskilde,
+        val periode: ÅpenPeriode
+    )
 
     data class InntektInn(
-        val personident: String,
-        val kilde: String,
+        val personident: Personident,
+        val kilde: Inntektskilde,
         val beløp: Beløp,
-        val fom: LocalDate,
-        val tom: LocalDate?,
+        val åpenPeriode: ÅpenPeriode
     ) {
         init {
-            require((tom ?: fom) >= fom) { "Ugyldig input $fom til $tom" }
-            if (beløp is Periodisert) require(tom != null) { "For periodiserte inntekter må det settes en tom" }
+            if (beløp is Periodisert) require(åpenPeriode.tom != null) { "For periodiserte inntekter må det settes en tom" }
             require(beløp.ører >= 0) { "Beløp kan ikke være mindre enn 0" }
         }
     }
 
     data class InntektUt(
         val løpenummer: Long,
-        val kilde: String,
+        val kilde: Inntektskilde,
         val beløp: Beløp?,
-        val fom: LocalDate,
-        val tom: LocalDate?,
+        val periode: ÅpenPeriode
     )
 
     sealed interface Beløp {

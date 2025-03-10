@@ -13,7 +13,7 @@ internal class PeriodisertBeløpTest {
 
         with(2023) {
             val året = 1.januar(this) til 31.desember(this)
-            val periodisertBeløp = GjeldendeInntekter.Beløp.Periodisert(årsbeløp, året)
+            val periodisertBeløp = Beløp.Periodisert(årsbeløp, året)
             assertEquals(dagsbeløp, periodisertBeløp.daglig.ører)
             // Akkurat i 2023 så var det faktisk 260 dager, så da er det jo det samme
             assertEquals(260, året.virkedager)
@@ -22,7 +22,7 @@ internal class PeriodisertBeløpTest {
         }
         with(2024) {
             val året = 1.januar(this) til 31.desember(this)
-            val periodisertBeløp = GjeldendeInntekter.Beløp.Periodisert(årsbeløp, året)
+            val periodisertBeløp = Beløp.Periodisert(årsbeløp, året)
             assertEquals(dagsbeløp, periodisertBeløp.daglig.ører)
             // Uten å vektlegge hvor mange virkedager det reelt var i 2024
             assertEquals(262, året.virkedager)
@@ -31,7 +31,7 @@ internal class PeriodisertBeløpTest {
         }
         with(2025) {
             val året = 1.januar(this) til 31.desember(this)
-            val periodisertBeløp = GjeldendeInntekter.Beløp.Periodisert(årsbeløp, året)
+            val periodisertBeløp = Beløp.Periodisert(årsbeløp, året)
             assertEquals(dagsbeløp, periodisertBeløp.daglig.ører)
             // Uten å vektlegge hvor mange virkedager det reelt er i 2025
             assertEquals(261, året.virkedager)
@@ -46,7 +46,7 @@ internal class PeriodisertBeløpTest {
         val dagsbeløp = årsbeløp / 260
         assertEquals(200_000, dagsbeløp)
         val `2023til2025` = 1.januar(2023) til 31.desember(2025)
-        val periodisertBeløp = GjeldendeInntekter.Beløp.Periodisert(
+        val periodisertBeløp = Beløp.Periodisert(
             ører = årsbeløp * 3,
             periode = `2023til2025`
         )

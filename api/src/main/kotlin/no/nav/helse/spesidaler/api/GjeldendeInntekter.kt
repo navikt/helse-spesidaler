@@ -29,40 +29,55 @@ internal class GjeldendeInntekter(personident: String, periode: Periode, dao: In
     }
 
     private companion object {
+        private data class AktuellInntekt(
+            val periode: Periode,
+            val inntektUt: InntektUt
+        )
         private fun gjeldendeInntekter(personident: String, periode: Periode, dao: InntektDao) = dao.hent(personident, periode)
+            // Må første grupper på inntektskilden ettersom de må vurderes hver for seg
             .groupBy { it.kilde }
+            // Sorterer inntektene på løpenummeret slik at vi ser på det nyeste først
             .mapValues { (_, inntekterUt) ->
                 inntekterUt.sortedByDescending { inntektUt ->
                     inntektUt.løpenummer
                 }
             }
+            // Finner den overlappende delen av inntekten som er aktuell
             .mapValues { (_, inntekterUt) ->
                 inntekterUt.map { inntektUt ->
                     val overlapp = Periode(inntektUt.fom, inntektUt.tom ?: periode.endInclusive).overlappendePeriode(periode) ?: error("Denne overlapper jo ikke?")
-                    val beløp = inntektUt.beløp.ører
-                    when (inntektUt.beløp.oppløsning) {
-                        Daglig -> GjeldendeInntekt(inntektUt.kilde, overlapp, Beløp.Daglig(beløp))
-                        Månedlig -> GjeldendeInntekt(inntektUt.kilde, overlapp, Beløp.Månedlig(beløp))
-                        Årlig -> GjeldendeInntekt(inntektUt.kilde, overlapp, Beløp.Årlig(beløp))
-                        Periodisert -> GjeldendeInntekt(inntektUt.kilde, overlapp, Beløp.Periodisert(beløp, inntektUt.fom til checkNotNull(inntektUt.tom) {
-                            "En periodisert inntekt må ha en lukket periode (tom != null)"
-                        }))
-                    }
+                    AktuellInntekt(overlapp, inntektUt)
                 }
             }
-            .mapValues { (_, gjeldendeInntekter) ->
-                gjeldendeInntekter.fold(emptyList<GjeldendeInntekt>()) { sammenslått, aktuell->
-                    val nyePerioder = sammenslått.map { it.periode }
-                        .sortedBy { it.start }
-                        .trim(aktuell.periode)
-                    sammenslått + nyePerioder.map {
-                        aktuell.copy(periode = it)
-                    }
+            // Slår sammen alle inntektene
+            // her er det viktig at vi ser på den nyeste inntekten først (som gjort i steg 1) og kun legger til perioder vi _ikke_ har hørt om før
+            .mapValues { (_, overlappendeInntekter) ->
+                overlappendeInntekter.fold(emptyList<AktuellInntekt>()) { sammenslått, aktuell->
+                    val nyePerioder = sammenslått.map { it.periode }.sortedBy { it.start }.trim(aktuell.periode)
+                    sammenslått + nyePerioder.map { aktuell.copy(periode = it) }
                 }
             }
-            .values
-            .flatten()
-            .filterNot { it.beløp.ører == 0 }
+            // Mapper om resultetet til en liste med gjeldedende inntekter
+            // Nå som vi er ferdig med å tolke per inntektskilde kan vi flatmappe det til én liste.
+            // Fjerner de delene som ikke har noe beløp (beløp = null) - de er å anse som fjernet (som er noe annet enn å sette 0,-)
+            .flatMap { (_, aktuelleInntekter) ->
+                aktuelleInntekter.mapNotNull {
+                    val beløpIØrer = it.inntektUt.beløp?.ører
+                    if (beløpIØrer == null) null
+                    else GjeldendeInntekt(
+                        kilde = it.inntektUt.kilde,
+                        periode = it.periode,
+                        beløp = when (it.inntektUt.beløp.oppløsning) {
+                            Daglig -> Beløp.Daglig(beløpIØrer)
+                            Månedlig -> Beløp.Månedlig(beløpIØrer)
+                            Årlig -> Beløp.Årlig(beløpIØrer)
+                            Periodisert -> Beløp.Periodisert(beløpIØrer, it.inntektUt.fom til checkNotNull(it.inntektUt.tom) {
+                                "En periodisert inntekt må ha en lukket periode (tom != null)"
+                            })
+                        }
+                    )
+                }
+            }
             .toSet()
     }
 }

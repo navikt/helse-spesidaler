@@ -10,7 +10,7 @@ CREATE TABLE inntekt
     opprettet           TIMESTAMPTZ NOT NULL DEFAULT now(),
     personident         TEXT NOT NULL,
     kilde               TEXT NOT NULL,
-    beløp_ører          INT NOT NULL,
+    beløp_ører          INT,
     beløp_oppløsning    oppløsning NOT NULL,
     fom                 DATE NOT NULL,
     tom                 DATE,

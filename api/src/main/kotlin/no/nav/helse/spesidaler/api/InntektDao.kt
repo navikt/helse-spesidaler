@@ -1,7 +1,7 @@
 package no.nav.helse.spesidaler.api
 
 import com.github.navikt.tbd_libs.sql_dsl.connection
-import com.github.navikt.tbd_libs.sql_dsl.int
+import com.github.navikt.tbd_libs.sql_dsl.intOrNull
 import com.github.navikt.tbd_libs.sql_dsl.localDate
 import com.github.navikt.tbd_libs.sql_dsl.localDateOrNull
 import com.github.navikt.tbd_libs.sql_dsl.long
@@ -32,6 +32,20 @@ internal class InntektDao(private val dataSource: DataSource) {
         }
     }
 
+    internal fun fjern(fjernInntekt: FjernInntekt) {
+        dataSource.connection {
+            @Language("PostgreSQL")
+            val sql = "INSERT INTO inntekt (personident, kilde, beløp_ører, beløp_oppløsning, fom, tom) VALUES (:personident, :kilde, NULL, CAST('Daglig' AS oppløsning), :fom, :tom)"
+            prepareStatementWithNamedParameters(sql) {
+                withParameter("personident", fjernInntekt.personident)
+                withParameter("kilde", fjernInntekt.kilde)
+                withParameter("fom", fjernInntekt.fom)
+                if (fjernInntekt.tom == null) withNull("tom")
+                else withParameter("tom", fjernInntekt.tom)
+            }.use(PreparedStatement::execute)
+        }
+    }
+
     internal fun hent(personident: String, periode: Periode): List<InntektUt> {
         return dataSource.connection {
             @Language("PostgreSQL")
@@ -45,15 +59,28 @@ internal class InntektDao(private val dataSource: DataSource) {
                 InntektUt(
                     løpenummer = row.long("løpenummer"),
                     kilde = row.string("kilde"),
-                    beløp = Beløp(
-                        ører = row.int("beløp_ører"),
-                        oppløsning = Beløp.Oppløsning.valueOf(row.string("beløp_oppløsning"))
-                    ),
+                    beløp = row.intOrNull("beløp_ører")?.let { beløpIØrer ->
+                        Beløp(
+                            ører = beløpIØrer,
+                            oppløsning = Beløp.Oppløsning.valueOf(row.string("beløp_oppløsning"))
+                        )
+                    },
                     fom = row.localDate("fom"),
                     tom = row.localDateOrNull("tom")
                 )
             }
         }
+    }
+}
+
+internal data class FjernInntekt(
+    val personident: String,
+    val kilde: String,
+    val fom: LocalDate,
+    val tom: LocalDate?
+) {
+    init {
+        require((tom ?: fom) >= fom) { "Ugyldig input $fom til $tom" }
     }
 }
 
@@ -74,7 +101,7 @@ internal data class InntektInn(
 internal data class InntektUt(
     val løpenummer: Long,
     val kilde: String,
-    val beløp: Beløp,
+    val beløp: Beløp?,
     val fom: LocalDate,
     val tom: LocalDate?,
 )

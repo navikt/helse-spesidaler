@@ -68,7 +68,7 @@ internal class GjeldendeInntekterTest {
 
         settInn(400_000_000, 1.januar, 31.januar, dao, Beløp.Oppløsning.Årlig)
         settInn(100_000, 15.januar, 28.januar, dao, Beløp.Oppløsning.Månedlig)
-        settInn(0, 20.januar, 20.januar, dao, Beløp.Oppløsning.Daglig)
+        fjern(20.januar, 20.januar, dao)
 
         val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
         val forventedeInntekter = setOf(
@@ -95,6 +95,26 @@ internal class GjeldendeInntekterTest {
         val forventedeInntekter = setOf(
             GjeldendeInntekt(orgnummer1, Periode(1.januar, 31.januar), Årlig(400_000_000)),
             GjeldendeInntekt(orgnummer2, Periode(15.januar, 28.januar), Månedlig(100_000))
+        )
+
+        assertEquals(forventedeInntekter, gjeldendeInntekter)
+    }
+
+    @Test
+    fun `å sette inntekten til 0 kroner er noe annet enn å fjerne inntekten`() = databaseTest {
+        val dao = InntektDao(it)
+
+        val orgnummer1 = "999999999"
+        val orgnummer2 = "111111111"
+
+        settInn(100_00, 1.januar, 31.januar, dao, Beløp.Oppløsning.Daglig, orgnummer = orgnummer1)
+        settInn(100_00, 1.januar, 31.januar, dao, Beløp.Oppløsning.Daglig, orgnummer = orgnummer2)
+        settInn(0, 1.januar, 31.januar, dao, Beløp.Oppløsning.Daglig, orgnummer = orgnummer1)
+        fjern(1.januar, 31.januar, dao, orgnummer2)
+
+        val gjeldendeInntekter = GjeldendeInntekter(personident, Periode(1.januar, 31.januar), dao).inntekter
+        val forventedeInntekter = setOf(
+            GjeldendeInntekt(orgnummer1, Periode(1.januar, 31.januar), Daglig(0)),
         )
 
         assertEquals(forventedeInntekter, gjeldendeInntekter)
@@ -128,5 +148,8 @@ internal class GjeldendeInntekterTest {
 
     private fun settInn(ører: Int, fom: LocalDate, tom: LocalDate, dao: InntektDao, oppløsning: Beløp.Oppløsning = Daglig, orgnummer: String = this.orgnummer) {
         dao.lagre(InntektInn(personident, orgnummer, Beløp(ører, oppløsning), fom, tom))
+    }
+    private fun fjern(fom: LocalDate, tom: LocalDate?, dao: InntektDao, orgnummer: String = this.orgnummer) {
+        dao.fjern(FjernInntekt(personident, orgnummer, fom, tom))
     }
 }

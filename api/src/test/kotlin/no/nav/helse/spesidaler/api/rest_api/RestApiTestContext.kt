@@ -5,16 +5,17 @@ import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import java.util.UUID
 import org.intellij.lang.annotations.Language
 import org.skyscreamer.jsonassert.JSONAssert
 
 internal data class RestApiTestContext(
-    private val maskinporten: Issuer,
+    private val issuer: Issuer,
     private val client: HttpClient
 ) {
-    fun spesidalerAsyncAccessToken(rolle: String?) = maskinporten.accessToken {
-        rolle?.let { withArrayClaim("roles", arrayOf(rolle)) }
-        withClaim("azp_name", "spesidaler-async")
+    fun spesidalerAsyncAccessToken(rolle: String?) = issuer.accessToken {
+        rolle?.let { withArrayClaim("roles", arrayOf(rolle, "${UUID.randomUUID()}")) }
+        withClaim("azp_name", "${UUID.randomUUID()}")
     }
     suspend fun inntektsendringer(
         @Language("JSON") requestBody: String,

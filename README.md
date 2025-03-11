@@ -57,3 +57,14 @@ Spørsmål knyttet til koden eller prosjektet kan stilles som issues her på Git
 
 ## For NAV-ansatte
 Interne henvendelser kan sendes via Slack i kanalen #team-bømlo-værsågod.
+
+# Database
+Databasen heter spesidaler, men spesidaler-api eier databasen 🤯, så for å få kontakt med databasen må man skrive
+
+`nais postgres grant spesidaler-api`
+
+og
+
+`nais postgres proxy spesidaler-api` 
+
+💪🏼

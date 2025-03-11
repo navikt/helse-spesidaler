@@ -1,7 +1,9 @@
 package no.nav.helse.spesidaler.async
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
+import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
@@ -18,12 +20,25 @@ internal class InntektsendringerRiver(
         River(rapidsConnection).apply {
             precondition {
                 it.requireValue("@event_name", "inntektsendringer")
-                it.forbid("inntektsendringFom")
+                it.forbid("inntektsendringFom") // Denne klasker Spesidaler på selv
             }
             validate {
                 it.require("@id") { id -> UUID.fromString(id.asText()) }
                 it.requireKey("fødselsnummer")
-                // TODO: mer validering her da
+                it.requireArray("inntektsendringer") {
+                    requireKey("inntektskilde")
+                    requireArray("nullstill") {
+                        require("fom", JsonNode::asLocalDate)
+                        // Denne (tom) er optional i API'et, men required her. For å unngå å åpne for mange dører
+                        require("tom", JsonNode::asLocalDate)
+                    }
+                    requireArray("inntekter") {
+                        require("fom", JsonNode::asLocalDate)
+                        // Denne (tom) er optional i API'et, men required her. For å unngå å åpne for mange dører
+                        require("tom", JsonNode::asLocalDate)
+                        interestedIn("periodebeløp", "dagsbeløp", "månedsbeløp", "årsbeløp")
+                    }
+                }
             }
         }.register(this)
     }

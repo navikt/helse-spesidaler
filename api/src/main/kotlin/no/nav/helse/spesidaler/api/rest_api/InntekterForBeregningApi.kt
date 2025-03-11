@@ -10,10 +10,12 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import java.time.LocalDate
 import javax.sql.DataSource
+import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.spesidaler.api.Beløp
 import no.nav.helse.spesidaler.api.GjeldendeInntekter
 import no.nav.helse.spesidaler.api.Periode.Companion.til
 import no.nav.helse.spesidaler.api.Personident
+import no.nav.helse.spesidaler.api.sikkerlogg
 import org.intellij.lang.annotations.Language
 
 private val objectmapper = jacksonObjectMapper()
@@ -42,6 +44,7 @@ internal fun Route.InntekterForBeregningApi(dataSource: () -> DataSource) {
                 this.addAll(gjeldendeInntekter)
             }
         }.toString()
+        sikkerlogg.info("Sender inntekter for {} i perioden $periode:\n\t${responseBody}", keyValue("fødselsnummer", personident.id))
         call.respondJson(responseBody, OK)
     }
 }

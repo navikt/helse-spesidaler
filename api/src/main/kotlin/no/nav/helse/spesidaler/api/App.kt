@@ -20,7 +20,7 @@ import no.nav.helse.spesidaler.api.rest_api.InntekterForBeregningApi
 import no.nav.helse.spesidaler.api.rest_api.InntektsendringerApi
 
 private val logg = LoggerFactory.getLogger(::main.javaClass)
-private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
+internal val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 private val objectmapper = jacksonObjectMapper()
     .registerModules(JavaTimeModule())
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)

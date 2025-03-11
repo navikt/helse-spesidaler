@@ -1,6 +1,5 @@
 package no.nav.helse.spesidaler.async
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
@@ -8,6 +7,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
+import java.util.*
 import org.slf4j.LoggerFactory
 
 internal class InntektsendringerRiver(
@@ -20,8 +20,11 @@ internal class InntektsendringerRiver(
                 it.requireValue("@event_name", "inntektsendringer")
                 it.forbid("inntektsendringFom")
             }
-            validate { it.requireKey("fødselsnummer") }
-            // TODO: mer validering her da
+            validate {
+                it.require("@id") { id -> UUID.fromString(id.asText()) }
+                it.requireKey("fødselsnummer")
+                // TODO: mer validering her da
+            }
         }.register(this)
     }
 
@@ -29,9 +32,9 @@ internal class InntektsendringerRiver(
         sikkerlogg.info("Mottok inntektsendringer:\n\t${packet.toJson()}")
         val fødselsnummer = packet["fødselsnummer"].asText()
 
-        val inntektsendringerFom = inntektsendringerOrNull(packet) ?: return
+        val inntektsendringFom = inntektsendringerOrNull(packet) ?: return
 
-        packet["inntektsendringFom"] = inntektsendringerFom
+        packet["inntektsendringFom"] = inntektsendringFom
 
         val json = packet.toJson()
         context.publish(fødselsnummer, json).also {
@@ -51,7 +54,6 @@ internal class InntektsendringerRiver(
     }
 
     private companion object {
-        private val objectmapper = jacksonObjectMapper()
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
     }
 }

@@ -13,6 +13,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
 import java.time.LocalDate
+import java.util.UUID
 
 internal class SpesidalerApiClient(
     private val httpClient: HttpClient,
@@ -29,24 +30,25 @@ internal class SpesidalerApiClient(
         val responseJson = post(
             endepunkt = "inntekter-for-beregning",
             requestBody = packet.toJson(),
-            callId = packet["@id"].asText(),
+            callId = UUID.fromString(packet["@id"].asText()),
             forventetResponseCode = 200
         )
         return responseJson.path("inntekter") as ArrayNode
     }
+
     fun inntektsendringer(packet: JsonMessage): LocalDate {
         check(dev) { "Mottatt inntektsendring, men det er ikke skrudd på enda!"}
 
         val responseJson = post(
             endepunkt = "inntektsendringer",
             requestBody = packet.toJson(),
-            callId = packet["@id"].asText(),
+            callId = UUID.fromString(packet["@id"].asText()),
             forventetResponseCode = 201
         )
         return responseJson.path("fom").asLocalDate()
     }
 
-    private fun post(endepunkt: String, requestBody: String, callId: String, forventetResponseCode: Int): JsonNode {
+    private fun post(endepunkt: String, requestBody: String, callId: UUID, forventetResponseCode: Int): JsonNode {
         val accessToken = azureTokenProvider.bearerToken(scope).getOrThrow()
         val request = HttpRequest
             .newBuilder()
@@ -56,7 +58,7 @@ internal class SpesidalerApiClient(
             .header("Accept", "application/json")
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer ${accessToken.token}")
-            .header("callId", callId)
+            .header("callId", "$callId")
             .build()
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
         check(response.statusCode() == forventetResponseCode) {

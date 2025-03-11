@@ -16,6 +16,8 @@ import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import io.prometheus.metrics.model.registry.PrometheusRegistry
 import org.slf4j.LoggerFactory
 import java.net.URI
+import no.nav.helse.spesidaler.api.db.DataSourceBuilder
+import no.nav.helse.spesidaler.api.db.DefaultDataSourceBuilder
 import no.nav.helse.spesidaler.api.rest_api.InntekterForBeregningApi
 import no.nav.helse.spesidaler.api.rest_api.InntektsendringerApi
 

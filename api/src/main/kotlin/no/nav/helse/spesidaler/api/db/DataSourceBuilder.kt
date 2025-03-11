@@ -1,4 +1,4 @@
-package no.nav.helse.spesidaler.api
+package no.nav.helse.spesidaler.api.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource

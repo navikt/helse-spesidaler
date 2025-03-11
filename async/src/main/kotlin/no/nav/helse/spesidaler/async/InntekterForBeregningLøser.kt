@@ -11,8 +11,9 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
 
-internal class InntekterLøser(
+internal class InntekterForBeregningLøser(
     rapidsConnection: RapidsConnection,
+    private val spesidalerApiClient: SpesidalerApiClient
 ) : River.PacketListener {
     init {
         River(rapidsConnection).apply {
@@ -27,17 +28,16 @@ internal class InntekterLøser(
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         sikkerlogg.info("Mottok behov for InntekterForBeregning:\n\t${packet.toJson()}")
-        val personIdent = packet["fødselsnummer"].asText()
-        val fom = packet["InntekterForBeregning.fom"].asLocalDate()
-        val tom = packet["InntekterForBeregning.tom"].asLocalDate()
+        val fødselsnummer = packet["fødselsnummer"].asText()
 
         packet["@løsning"] = mapOf(
             "InntekterForBeregning" to mapOf(
-                "inntekter" to emptyList<Nothing>()
+                "inntekter" to spesidalerApiClient.inntekterForBeregning(packet)
             )
         )
-        context.publish(personIdent, packet.toJson()).also {
-            sikkerlogg.info("Sender løsning for InntekterForBeregning:\n\t${packet.toJson()}")
+        val json = packet.toJson()
+        context.publish(fødselsnummer, json).also {
+            sikkerlogg.info("Sender løsning for InntekterForBeregning:\n\t${json}")
         }
     }
 

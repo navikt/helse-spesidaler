@@ -35,7 +35,7 @@ internal class SpesidalerApiClient(
         return responseJson.path("inntekter") as ArrayNode
     }
     fun inntektsendringer(packet: JsonMessage): LocalDate {
-        check(dev) { "Mottet inntektsendring, men det er ikke skrudd på enda!"}
+        check(dev) { "Mottatt inntektsendring, men det er ikke skrudd på enda!"}
 
         val responseJson = post(
             endepunkt = "inntektsendringer",

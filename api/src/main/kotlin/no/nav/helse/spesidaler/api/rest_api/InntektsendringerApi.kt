@@ -43,14 +43,15 @@ private fun JsonNode.åpenPeriode() = ÅpenPeriode(
 )
 private fun JsonNode.ører() = this.takeIf { it.isNumber }?.asDouble()?.let { (it * 100.0).roundToInt() }
 private fun JsonNode.beløp(): Beløp {
-    val inntekter = listOfNotNull(
+    val beløp = listOfNotNull(
         path("dagsbeløp").ører()?.let { Beløp.Daglig(it) },
         path("månedsbeløp").ører()?.let { Beløp.Månedlig(it)},
         path("årsbeløp").ører()?.let { Beløp.Årlig(it) },
         path("periodebeløp").ører()?.let { Beløp.Periodisert(it, åpenPeriode().lukketPeriode) }
     )
-    check(inntekter.size == 1) { "Det er opplyst om ${inntekter.size} beløp, forventet bare ett!"}
-    return inntekter.single()
+    if (beløp.size == 1) return beløp.single()
+    if (beløp.isEmpty()) error("Det er ikke opplyst om noen beløp i ${toString()}!")
+    error("Det er opplyst om fler beløp i samme periode! ${beløp.joinToString { "${it::class.simpleName}" }}")
 }
 private fun Inntektsendringer.Inntektsendring.førsteDato() = listOfNotNull(nullstill.minOfOrNull { it.fom }, inntekter.minOfOrNull { it.periode.fom }).minOrNull()
 private fun List<Inntektsendringer.Inntektsendring>.førsteDato() =  mapNotNull { it.førsteDato() }.minOrNull()

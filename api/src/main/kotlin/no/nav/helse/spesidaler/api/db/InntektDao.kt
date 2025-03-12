@@ -44,8 +44,8 @@ internal object InntektDao {
     }
 
     internal fun Connection.hent(personident: Personident, periode: Periode): List<Db.InntektUt> {
-        @Language("PostgreSQL")
-        val sql = "SELECT * FROM inntekt WHERE personident = :personident AND fom >= :fom AND (tom IS NULL OR tom <= :tom)"
+        @Language("PostgreSQL") // The COALESCE function returns the first of its arguments that is not null
+        val sql = "SELECT * FROM inntekt WHERE personident = :personident AND (COALESCE(tom, :tom)) >= :fom AND NOT fom > :tom"
 
         return prepareStatementWithNamedParameters(sql) {
             withParameter("personident", personident.id)

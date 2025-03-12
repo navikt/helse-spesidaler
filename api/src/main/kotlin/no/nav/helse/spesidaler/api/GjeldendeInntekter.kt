@@ -55,7 +55,7 @@ internal class GjeldendeInntekter(personident: Personident, periode: Periode, da
                             is Db.Daglig -> Beløp.Daglig(beløpIØrer)
                             is Db.Månedlig -> Beløp.Månedlig(beløpIØrer)
                             is Db.Årlig -> Beløp.Årlig(beløpIØrer)
-                            is Db.Periodisert -> Beløp.Periodisert(beløpIØrer, it.inntektUt.periode.lukketPeriode())
+                            is Db.Periodisert -> Beløp.Periodisert(beløpIØrer, it.inntektUt.periode.lukketPeriode)
                         }
                     )
                 }

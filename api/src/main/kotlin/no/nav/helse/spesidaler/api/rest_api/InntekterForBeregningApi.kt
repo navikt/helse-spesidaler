@@ -12,6 +12,7 @@ import java.time.LocalDate
 import javax.sql.DataSource
 import net.logstash.logback.argument.StructuredArguments.keyValue
 import no.nav.helse.spesidaler.api.Beløp
+import no.nav.helse.spesidaler.api.BeregnetDaglig
 import no.nav.helse.spesidaler.api.GjeldendeInntekter
 import no.nav.helse.spesidaler.api.Periode.Companion.til
 import no.nav.helse.spesidaler.api.Personident
@@ -52,6 +53,6 @@ internal fun Route.InntekterForBeregningApi(dataSource: () -> DataSource) {
 private fun Beløp.toJson() = when (this) {
     is Beløp.Daglig -> "daglig" to ører / 100.0
     is Beløp.Månedlig -> "månedlig" to ører / 100.0
-    is Beløp.Periodisert -> "daglig" to daglig.ører / 100.0
+    is Beløp.Periodisert -> "daglig" to BeregnetDaglig(this).ører / 100.0
     is Beløp.Årlig -> "årlig" to ører / 100.0
 }

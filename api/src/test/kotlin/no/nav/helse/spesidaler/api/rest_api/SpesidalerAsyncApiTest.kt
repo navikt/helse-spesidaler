@@ -35,7 +35,7 @@ internal class SpesidalerAsyncApiTest: RestApiTest() {
                     "inntektskilde": "999999999",
                     "fom": "2018-01-10",
                     "tom": "2018-01-20",
-                    "daglig": 5772.12
+                    "daglig": 5772.115384615385
                   }]
                 }""", responseBody)
             }

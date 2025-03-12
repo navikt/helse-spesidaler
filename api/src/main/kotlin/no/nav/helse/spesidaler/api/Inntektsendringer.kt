@@ -42,7 +42,7 @@ internal class Inntektsendringer(personident: Personident, inntektsendringer: Li
                                 is Beløp.Månedlig -> Db.Månedlig(inntektsperiode.beløp.ører)
                                 is Beløp.Årlig -> Db.Årlig(inntektsperiode.beløp.ører)
                                 is Beløp.Periodisert -> Db.Periodisert(inntektsperiode.beløp.ører).also {
-                                    check(inntektsperiode.periode.lukketPeriode() == inntektsperiode.beløp.periode) { "Dette må være en tøysete periodisert inntekt!" }
+                                    check(inntektsperiode.periode.lukketPeriode == inntektsperiode.beløp.periode) { "Dette må være en tøysete periodisert inntekt!" }
                                 }
                             }
                         ))

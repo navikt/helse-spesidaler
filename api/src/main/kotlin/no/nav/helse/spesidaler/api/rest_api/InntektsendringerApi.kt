@@ -47,7 +47,7 @@ private fun JsonNode.beløp(): Beløp {
         path("dagsbeløp").ører()?.let { Beløp.Daglig(it) },
         path("månedsbeløp").ører()?.let { Beløp.Månedlig(it)},
         path("årsbeløp").ører()?.let { Beløp.Årlig(it) },
-        path("periodebeløp").ører()?.let { Beløp.Periodisert(it, åpenPeriode().lukketPeriode()) }
+        path("periodebeløp").ører()?.let { Beløp.Periodisert(it, åpenPeriode().lukketPeriode) }
     )
     check(inntekter.size == 1) { "Det er opplyst om ${inntekter.size} beløp, forventet bare ett!"}
     return inntekter.single()

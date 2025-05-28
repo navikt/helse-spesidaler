@@ -6,6 +6,7 @@ on:
       - 'opprydding-dev/**'
       - '.github/workflows/opprydding-dev.yml'
       - '.nais/opprydding-dev.yml'
+      - '.nais/dev-db-policy.yml'
       - 'build.gradle.kts'
     branches:
       - main

@@ -1,3 +1,3 @@
 rootProject.name = "spesidaler"
-include("api", "async")
+include("api", "async", "opprydding-dev")
 

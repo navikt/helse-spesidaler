@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 
 val junitJupiterVersion = "5.12.1"
 val tbdLibsVersion = "2025.03.30-14.11-a91ce546"
+val rapidsAndRiversVersion = "2025033014191743337188.2f9d6b08d096"
 
 plugins {
     kotlin("jvm") version "2.1.20" apply false
@@ -30,6 +31,7 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     ext.set("tbdLibsVersion", tbdLibsVersion)
+    ext.set("rapidsAndRiversVersion", rapidsAndRiversVersion)
 
     val testImplementation by configurations
     val testRuntimeOnly by configurations

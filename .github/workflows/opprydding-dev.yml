@@ -5,7 +5,7 @@ on:
     paths:
       - 'opprydding-dev/**'
       - '.github/workflows/opprydding-dev.yml'
-      - 'deploy/opprydding-dev.yml'
+      - '.nais/opprydding-dev.yml'
       - 'build.gradle.kts'
     branches:
       - main
@@ -48,5 +48,5 @@ jobs:
       - uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: dev-gcp
-          RESOURCE: deploy/opprydding-dev.yml,deploy/dev-db-policy.yml
+          RESOURCE: .nais/opprydding-dev.yml,.nais/dev-db-policy.yml
           IMAGE: ${{ needs.build.outputs.image }}

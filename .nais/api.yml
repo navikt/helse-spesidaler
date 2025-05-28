@@ -16,6 +16,8 @@ spec:
         databases:
           - name: spesidaler
             envVarPrefix: DATABASE
+            users:
+              - name: spesidaler-opprydding-dev
   strategy:
     type: RollingUpdate
   replicas:

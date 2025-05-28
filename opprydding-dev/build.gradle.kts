@@ -6,8 +6,6 @@ private val kotliqueryVersion = "1.9.0"
 val rapidsAndRiversVersion: String by project
 val tbdLibsVersion: String by project
 
-val mainClass = "no.nav.helse.opprydding.AppKt"
-
 dependencies {
     api("com.github.navikt:rapids-and-rivers:$rapidsAndRiversVersion")
 

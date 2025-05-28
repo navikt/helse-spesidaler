@@ -1,4 +1,4 @@
-package no.nav.helse.opprydding_dev
+package no.nav.helse.spesidaler.opprydding_dev
 
 import no.nav.helse.rapids_rivers.RapidApplication
 

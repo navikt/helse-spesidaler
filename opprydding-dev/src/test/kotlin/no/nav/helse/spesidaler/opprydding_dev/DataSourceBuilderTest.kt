@@ -1,4 +1,4 @@
-package no.nav.helse.opprydding_dev
+package no.nav.helse.spesidaler.opprydding_dev
 
 import com.github.navikt.tbd_libs.test_support.CleanupStrategy
 import com.github.navikt.tbd_libs.test_support.DatabaseContainers

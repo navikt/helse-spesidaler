@@ -15,7 +15,7 @@ internal class PersonRepository(private val dataSource: DataSource) {
     }
 
     private fun Session.slettInntekter(fødselsnummer: String) {
-        val query = "DELETE FROM inntekt WHERE fnr = ?"
+        val query = "DELETE FROM inntekt WHERE personident = ?"
         run(queryOf(query, fødselsnummer).asExecute)
     }
 }

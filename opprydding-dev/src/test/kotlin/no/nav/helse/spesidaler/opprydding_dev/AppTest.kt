@@ -52,12 +52,12 @@ internal class AppTest : DataSourceBuilderTest() {
 
     private fun finnInntekt(fødselsnummer: String): Int {
         return sessionOf(testDataSource.ds).use { session ->
-            session.run(queryOf("SELECT COUNT(1) FROM inntekt WHERE fnr = ?", fødselsnummer).map { it.int(1) }.asSingle)
+            session.run(queryOf("SELECT COUNT(1) FROM inntekt WHERE personident = ?", fødselsnummer).map { it.int(1) }.asSingle)
         } ?: 0
     }
 
     private fun opprettInntekt(fødselsnummer: String) {
-        val query = "INSERT INTO inntekt (fnr) VALUES (?)"
+        val query = "INSERT INTO inntekt (personident) VALUES (?)"
         sessionOf(testDataSource.ds).use { it.run(queryOf(query, fødselsnummer).asUpdate) }
     }
 

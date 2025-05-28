@@ -1,1 +1,1 @@
-create table inntekt (fnr text);
+create table inntekt (personident text);

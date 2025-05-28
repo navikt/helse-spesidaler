@@ -1,4 +1,4 @@
-package no.nav.helse.opprydding
+package no.nav.helse.opprydding_dev
 
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext

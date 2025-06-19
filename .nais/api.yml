@@ -60,8 +60,9 @@ spec:
               - "inntekter-for-beregning"
               - "inntektsendringer"
     outbound:
-      - application: logging
-        namespace: nais-system
+      rules:
+        - application: logging
+          namespace: nais-system
   ingresses:
     {{#each ingresses }}
     - "{{this}}"

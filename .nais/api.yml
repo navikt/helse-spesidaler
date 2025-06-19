@@ -59,6 +59,9 @@ spec:
             roles:
               - "inntekter-for-beregning"
               - "inntektsendringer"
+      outbound:
+        - application: logging
+          namespace: nais-system
   ingresses:
     {{#each ingresses }}
     - "{{this}}"

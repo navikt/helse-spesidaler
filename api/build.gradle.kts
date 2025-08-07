@@ -2,7 +2,7 @@ val tbdLibsVersion: String by project
 val logbackClassicVersion = "1.5.16"
 val logbackEncoderVersion = "8.0"
 val jacksonVersion = "2.18.3"
-val ktorVersion = "3.1.2" // bør være samme som i <com.github.navikt.tbd-libs:naisful-app>
+val ktorVersion = "3.2.3" // bør være samme som i <com.github.navikt.tbd-libs:naisful-app>
 val mockkVersion = "1.13.17"
 val flywayCoreVersion = "11.5.0"
 val hikariCPVersion = "6.3.0"

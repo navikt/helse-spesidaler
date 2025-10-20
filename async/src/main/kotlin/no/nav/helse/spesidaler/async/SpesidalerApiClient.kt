@@ -13,7 +13,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
 import java.time.LocalDate
-import java.util.UUID
+import java.util.*
 
 internal class SpesidalerApiClient(
     private val httpClient: HttpClient,
@@ -21,12 +21,9 @@ internal class SpesidalerApiClient(
     env: Map<String, String>
 ) {
     private val cluster = env["NAIS_CLUSTER_NAME"]?.lowercase() ?: "prod-gcp"
-    private val dev = cluster == "dev-gcp"
     private val scope = "api://$cluster.tbd.spesidaler-api/.default"
 
     fun inntekterForBeregning(packet: JsonMessage): ArrayNode {
-        if (!dev) return objectmapper.createArrayNode()
-
         val responseJson = post(
             endepunkt = "inntekter-for-beregning",
             requestBody = packet.toJson(),
@@ -37,8 +34,6 @@ internal class SpesidalerApiClient(
     }
 
     fun inntektsendringer(packet: JsonMessage): LocalDate {
-        check(dev) { "Mottatt inntektsendring, men det er ikke skrudd på enda!"}
-
         val responseJson = post(
             endepunkt = "inntektsendringer",
             requestBody = packet.toJson(),

@@ -51,8 +51,6 @@ spec:
         role: roles/cloudsql.client
   envFrom:
     - secret: google-sql-spesidaler-api-spesidaler-spesidaler-oppryd-7d72ab4a
-  secureLogs:
-    enabled: true
   env:
   - name: KAFKA_CONSUMER_GROUP_ID
     value: spesidaler-opprydding-dev-v1

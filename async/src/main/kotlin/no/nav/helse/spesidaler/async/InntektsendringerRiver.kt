@@ -47,7 +47,7 @@ internal class InntektsendringerRiver(
         sikkerlogg.info("Mottok inntektsendringer:\n\t${packet.toJson()}")
         val fødselsnummer = packet["fødselsnummer"].asText()
 
-        val inntektsendringFom = inntektsendringerOrNull(packet) ?: return
+        val inntektsendringFom = inntektsendringer(packet)
 
         packet["inntektsendringFom"] = inntektsendringFom
 
@@ -57,11 +57,11 @@ internal class InntektsendringerRiver(
         }
     }
 
-    private fun inntektsendringerOrNull(packet: JsonMessage) = try {
+    private fun inntektsendringer(packet: JsonMessage) = try {
         spesidalerApiClient.inntektsendringer(packet)
     } catch (err: Exception) {
         sikkerlogg.error("Feil ved håndtering av inntektsendringer", err)
-        null
+        throw err
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {

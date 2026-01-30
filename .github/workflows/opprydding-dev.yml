@@ -8,6 +8,7 @@ on:
       - '.nais/opprydding-dev.yml'
       - '.nais/dev-db-policy.yml'
       - 'build.gradle.kts'
+      - 'Dockerfile'
     branches:
       - main
 

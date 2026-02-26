@@ -5,7 +5,7 @@ val tbdLibsVersion = "2026.01.22-09.16-1d3f6039"
 val rapidsAndRiversVersion = "2026011411051768385145.e8ebad1177b4"
 
 plugins {
-    kotlin("jvm") version "2.2.21" apply false
+    kotlin("jvm") version "2.3.0" apply false
 }
 
 allprojects {

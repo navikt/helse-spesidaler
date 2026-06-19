@@ -17,7 +17,9 @@ spec:
           - name: spesidaler
             envVarPrefix: DATABASE
             users:
-              - name: spesidaler-opprydding-dev
+              {{#each database_users }}
+              - name: "{{this}}"
+              {{/each}}
   strategy:
     type: RollingUpdate
   replicas:

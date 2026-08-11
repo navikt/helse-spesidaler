@@ -22,7 +22,7 @@ tbd-libs-sql-dsl = { module = "com.github.navikt.tbd-libs:sql-dsl", version.ref 
 
 jsonassert = "org.skyscreamer:jsonassert:1.5.3"
 wiremock = "org.wiremock:wiremock-jetty12:3.13.2"
-mockk = "io.mockk:mockk:1.13.17"
+mockk = "io.mockk:mockk:1.14.11"
 tbd-libs-mock-http-client = { module = "com.github.navikt.tbd-libs:mock-http-client", version.ref = "tbd-libs" }
 tbd-libs-naisful-test-app = { module = "com.github.navikt.tbd-libs:naisful-test-app", version.ref = "tbd-libs" }
 tbd-libs-postgres-testdatabaser = { module = "com.github.navikt.tbd-libs:postgres-testdatabaser", version.ref = "tbd-libs" }

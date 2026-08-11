@@ -9,7 +9,7 @@ flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
 cloud-sql-postgres-socket-factory = "com.google.cloud.sql:postgres-socket-factory:1.29.0"
 jackson-datatype-jsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310" }
-kotliquery = "com.github.seratch:kotliquery:1.9.0"
+kotliquery = "com.github.seratch:kotliquery:1.9.1"
 ktor-server-auth = { module = "io.ktor:ktor-server-auth" }
 ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt" }
 logback-classic = "ch.qos.logback:logback-classic:1.6.1"

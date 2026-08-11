@@ -1,12 +1,17 @@
-val rapidsAndRiversVersion: String by project
-val tbdLibsVersion: String by project
-val mockkVersion = "1.13.17"
+plugins {
+    id("no.nav.helse.sas.sas-deployable")
+}
+
+sasDeployable {
+    mainClass = "no.nav.helse.spesidaler.async.AppKt"
+    imageName = "helse-spesidaler-async"
+}
 
 dependencies {
-    api("com.github.navikt:rapids-and-rivers:$rapidsAndRiversVersion")
-    api("com.github.navikt.tbd-libs:azure-token-client-default:$tbdLibsVersion")
+    implementation(libs.rapids.and.rivers)
+    implementation(libs.tbd.libs.azure)
 
-    testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
-    testImplementation("com.github.navikt.tbd-libs:mock-http-client:$tbdLibsVersion")
-    testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation(libs.tbd.libs.rapids.and.rivers.test)
+    testImplementation(libs.tbd.libs.mock.http.client)
+    testImplementation(libs.mockk)
 }

@@ -9,41 +9,47 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
-import java.util.*
 import org.slf4j.LoggerFactory
+import java.util.*
 
 internal class InntektsendringerRiver(
     rapidsConnection: RapidsConnection,
-    private val spesidalerApiClient: SpesidalerApiClient
+    private val spesidalerApiClient: SpesidalerApiClient,
 ) : River.PacketListener {
     init {
-        River(rapidsConnection).apply {
-            precondition {
-                it.requireValue("@event_name", "inntektsendringer")
-                it.forbid("inntektsendringFom") // Denne klasker Spesidaler på selv
-            }
-            validate {
-                it.require("@id") { id -> UUID.fromString(id.asText()) }
-                it.requireKey("fødselsnummer")
-                it.requireArray("inntektsendringer") {
-                    requireKey("inntektskilde")
-                    requireArray("nullstill") {
-                        require("fom", JsonNode::asLocalDate)
-                        // Denne (tom) er optional i API'et, men required her. For å unngå å åpne for mange dører
-                        require("tom", JsonNode::asLocalDate)
-                    }
-                    requireArray("inntekter") {
-                        require("fom", JsonNode::asLocalDate)
-                        // Denne (tom) er optional i API'et, men required her. For å unngå å åpne for mange dører
-                        require("tom", JsonNode::asLocalDate)
-                        interestedIn("periodebeløp", "dagsbeløp", "månedsbeløp", "årsbeløp")
+        River(rapidsConnection)
+            .apply {
+                precondition {
+                    it.requireValue("@event_name", "inntektsendringer")
+                    it.forbid("inntektsendringFom") // Denne klasker Spesidaler på selv
+                }
+                validate {
+                    it.require("@id") { id -> UUID.fromString(id.asText()) }
+                    it.requireKey("fødselsnummer")
+                    it.requireArray("inntektsendringer") {
+                        requireKey("inntektskilde")
+                        requireArray("nullstill") {
+                            require("fom", JsonNode::asLocalDate)
+                            // Denne (tom) er optional i API'et, men required her. For å unngå å åpne for mange dører
+                            require("tom", JsonNode::asLocalDate)
+                        }
+                        requireArray("inntekter") {
+                            require("fom", JsonNode::asLocalDate)
+                            // Denne (tom) er optional i API'et, men required her. For å unngå å åpne for mange dører
+                            require("tom", JsonNode::asLocalDate)
+                            interestedIn("periodebeløp", "dagsbeløp", "månedsbeløp", "årsbeløp")
+                        }
                     }
                 }
-            }
-        }.register(this)
+            }.register(this)
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         sikkerlogg.info("Mottok inntektsendringer:\n\t${packet.toJson()}")
         val fødselsnummer = packet["fødselsnummer"].asText()
 
@@ -53,18 +59,23 @@ internal class InntektsendringerRiver(
 
         val json = packet.toJson()
         context.publish(fødselsnummer, json).also {
-            sikkerlogg.info("Sender inntektsendringer med inntektsendringFom:\n\t${json}")
+            sikkerlogg.info("Sender inntektsendringer med inntektsendringFom:\n\t$json")
         }
     }
 
-    private fun inntektsendringer(packet: JsonMessage) = try {
-        spesidalerApiClient.inntektsendringer(packet)
-    } catch (err: Exception) {
-        sikkerlogg.error("Feil ved håndtering av inntektsendringer", err)
-        throw err
-    }
+    private fun inntektsendringer(packet: JsonMessage) =
+        try {
+            spesidalerApiClient.inntektsendringer(packet)
+        } catch (err: Exception) {
+            sikkerlogg.error("Feil ved håndtering av inntektsendringer", err)
+            throw err
+        }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         sikkerlogg.error("Forstod ikke inntektsendringer:\n${problems.toExtendedReport()}")
     }
 

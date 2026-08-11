@@ -1,11 +1,10 @@
 package no.nav.helse.spesidaler.api
 
-import kotlin.test.assertEquals
 import no.nav.helse.spesidaler.api.Periode.Companion.til
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
 internal class PeriodisertBeløpTest {
-
     @Test
     fun `Et periodisert beløp for tre år med forskjellig antall virkedager`() {
         val årsbeløp = 520000_00
@@ -44,10 +43,11 @@ internal class PeriodisertBeløpTest {
         val dagsbeløp = årsbeløp / 260.0
         assertEquals(2000_00.0, dagsbeløp)
         val `2023til2025` = 1.januar(2023) til 31.desember(2025)
-        val periodisertBeløp = Beløp.Periodisert(
-            ører = årsbeløp * 3,
-            periode = `2023til2025`
-        )
+        val periodisertBeløp =
+            Beløp.Periodisert(
+                ører = årsbeløp * 3,
+                periode = `2023til2025`,
+            )
         assertEquals(dagsbeløp, periodisertBeløp.daglig)
         // Uten å vektlegge virkedager i de 3 årene
         assertEquals((260 + 262 + 261), `2023til2025`.virkedager)

@@ -5,6 +5,7 @@ import com.github.navikt.tbd_libs.test_support.DatabaseContainers
 import javax.sql.DataSource
 
 val databaseContainer = DatabaseContainers.container("spesidaler", CleanupStrategy.tables("inntekt"))
+
 fun databaseTest(testblokk: (DataSource) -> Unit) {
     val testDataSource = databaseContainer.nyTilkobling()
     try {

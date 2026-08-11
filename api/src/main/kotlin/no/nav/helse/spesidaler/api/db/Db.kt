@@ -8,14 +8,14 @@ internal object Db {
     data class FjernInntekt(
         val personident: Personident,
         val kilde: Inntektskilde,
-        val periode: ÅpenPeriode
+        val periode: ÅpenPeriode,
     )
 
     data class InntektInn(
         val personident: Personident,
         val kilde: Inntektskilde,
         val beløp: Beløp,
-        val periode: ÅpenPeriode
+        val periode: ÅpenPeriode,
     ) {
         init {
             if (beløp is Periodisert) require(periode.tom != null) { "For periodiserte inntekter må det settes en tom" }
@@ -27,14 +27,18 @@ internal object Db {
         val løpenummer: Long,
         val kilde: Inntektskilde,
         val beløp: Beløp?,
-        val periode: ÅpenPeriode
+        val periode: ÅpenPeriode,
     )
 
     sealed interface Beløp {
         val ører: Int
         val oppløsning: String
+
         companion object {
-            fun gjenopprett(ører: Int, oppløsning: String) = when (oppløsning) {
+            fun gjenopprett(
+                ører: Int,
+                oppløsning: String,
+            ) = when (oppløsning) {
                 "Daglig" -> Daglig(ører)
                 "Månedlig" -> Månedlig(ører)
                 "Årlig" -> Årlig(ører)
@@ -43,16 +47,28 @@ internal object Db {
             }
         }
     }
-    data class Daglig(override val ører: Int): Beløp {
+
+    data class Daglig(
+        override val ører: Int,
+    ) : Beløp {
         override val oppløsning = "Daglig"
     }
-    data class Månedlig(override val ører: Int): Beløp {
+
+    data class Månedlig(
+        override val ører: Int,
+    ) : Beløp {
         override val oppløsning = "Månedlig"
     }
-    data class Årlig(override val ører: Int): Beløp {
+
+    data class Årlig(
+        override val ører: Int,
+    ) : Beløp {
         override val oppløsning = "Årlig"
     }
-    data class Periodisert(override val ører: Int): Beløp {
+
+    data class Periodisert(
+        override val ører: Int,
+    ) : Beløp {
         override val oppløsning = "Periodisert"
     }
 }

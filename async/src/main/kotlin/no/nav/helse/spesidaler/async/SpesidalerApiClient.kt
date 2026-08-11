@@ -18,43 +18,51 @@ import java.util.*
 internal class SpesidalerApiClient(
     private val httpClient: HttpClient,
     private val azureTokenProvider: AzureTokenProvider,
-    env: Map<String, String>
+    env: Map<String, String>,
 ) {
     private val cluster = env["NAIS_CLUSTER_NAME"]?.lowercase() ?: "prod-gcp"
     private val scope = "api://$cluster.tbd.spesidaler-api/.default"
 
     fun inntekterForBeregning(packet: JsonMessage): ArrayNode {
-        val responseJson = post(
-            endepunkt = "inntekter-for-beregning",
-            requestBody = packet.toJson(),
-            callId = UUID.fromString(packet["@id"].asText()),
-            forventetResponseCode = 200
-        )
+        val responseJson =
+            post(
+                endepunkt = "inntekter-for-beregning",
+                requestBody = packet.toJson(),
+                callId = UUID.fromString(packet["@id"].asText()),
+                forventetResponseCode = 200,
+            )
         return responseJson.path("inntekter") as ArrayNode
     }
 
     fun inntektsendringer(packet: JsonMessage): LocalDate {
-        val responseJson = post(
-            endepunkt = "inntektsendringer",
-            requestBody = packet.toJson(),
-            callId = UUID.fromString(packet["@id"].asText()),
-            forventetResponseCode = 201
-        )
+        val responseJson =
+            post(
+                endepunkt = "inntektsendringer",
+                requestBody = packet.toJson(),
+                callId = UUID.fromString(packet["@id"].asText()),
+                forventetResponseCode = 201,
+            )
         return responseJson.path("fom").asLocalDate()
     }
 
-    private fun post(endepunkt: String, requestBody: String, callId: UUID, forventetResponseCode: Int): JsonNode {
+    private fun post(
+        endepunkt: String,
+        requestBody: String,
+        callId: UUID,
+        forventetResponseCode: Int,
+    ): JsonNode {
         val accessToken = azureTokenProvider.bearerToken(scope).getOrThrow()
-        val request = HttpRequest
-            .newBuilder()
-            .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-            .uri(URI("http://spesidaler-api/$endepunkt"))
-            .timeout(Duration.ofSeconds(10))
-            .header("Accept", "application/json")
-            .header("Content-Type", "application/json")
-            .header("Authorization", "Bearer ${accessToken.token}")
-            .header("callId", "$callId")
-            .build()
+        val request =
+            HttpRequest
+                .newBuilder()
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                .uri(URI("http://spesidaler-api/$endepunkt"))
+                .timeout(Duration.ofSeconds(10))
+                .header("Accept", "application/json")
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer ${accessToken.token}")
+                .header("callId", "$callId")
+                .build()
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
         check(response.statusCode() == forventetResponseCode) {
             "Feil fra Spesidaler-API. Forventet HTTP $forventetResponseCode, men fikk ${response.statusCode()}"

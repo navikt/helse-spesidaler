@@ -13,6 +13,7 @@ class AzureApp(
         config.endepunkt("inntektsendringer")
         config.endepunkt("inntekter-for-beregning")
     }
+
     private fun AuthenticationConfig.endepunkt(endpunkt: String) {
         jwt(endpunkt) {
             verifier(jwkProvider, issuer) {

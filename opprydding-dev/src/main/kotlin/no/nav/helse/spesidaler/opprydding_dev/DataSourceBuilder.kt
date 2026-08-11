@@ -4,8 +4,9 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import java.time.Duration
 
-internal class DataSourceBuilder(env: Map<String, String>) {
-
+internal class DataSourceBuilder(
+    env: Map<String, String>,
+) {
     private val gcpProjectId: String = env.envValue("GCP_TEAM_PROJECT_ID")
     private val databaseRegion: String = env.envValue("DATABASE_REGION")
     private val databaseInstance: String = env.envValue("DATABASE_INSTANCE")
@@ -15,24 +16,26 @@ internal class DataSourceBuilder(env: Map<String, String>) {
 
     private fun Map<String, String>.envValue(value: String) = requireNotNull(get(value)) { "$value must be set" }
 
-    private val hikariConfig = HikariConfig().apply {
-        jdbcUrl = String.format(
-            "jdbc:postgresql:///%s?%s&%s",
-            databaseName,
-            "cloudSqlInstance=$gcpProjectId:$databaseRegion:$databaseInstance",
-            "socketFactory=com.google.cloud.sql.postgres.SocketFactory"
-        )
+    private val hikariConfig =
+        HikariConfig().apply {
+            jdbcUrl =
+                String.format(
+                    "jdbc:postgresql:///%s?%s&%s",
+                    databaseName,
+                    "cloudSqlInstance=$gcpProjectId:$databaseRegion:$databaseInstance",
+                    "socketFactory=com.google.cloud.sql.postgres.SocketFactory",
+                )
 
-        username = databaseUsername
-        password = databasePassword
+            username = databaseUsername
+            password = databasePassword
 
-        maximumPoolSize = 3
-        minimumIdle = 1
-        initializationFailTimeout = Duration.ofMinutes(1).toMillis()
-        connectionTimeout = Duration.ofSeconds(5).toMillis()
-        maxLifetime = Duration.ofMinutes(30).toMillis()
-        idleTimeout = Duration.ofMinutes(10).toMillis()
-    }
+            maximumPoolSize = 3
+            minimumIdle = 1
+            initializationFailTimeout = Duration.ofMinutes(1).toMillis()
+            connectionTimeout = Duration.ofSeconds(5).toMillis()
+            maxLifetime = Duration.ofMinutes(30).toMillis()
+            idleTimeout = Duration.ofMinutes(10).toMillis()
+        }
 
     internal fun getDataSource() = HikariDataSource(hikariConfig)
 }

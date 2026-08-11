@@ -3,24 +3,24 @@ package no.nav.helse.spesidaler.api.rest_api
 import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.http.HttpStatusCode.Companion.Unauthorized
-import kotlin.test.assertEquals
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
-internal class SpesidalerAsyncApiTest: RestApiTest() {
-
+internal class SpesidalerAsyncApiTest : RestApiTest() {
     @Test
-    fun `lagring henting av inntekter`() = spesidalerTestApp {
-        inntektsendringer(
-            requestBody = LeggTil,
-            assertResponse = { status, responseBody ->
-                assertEquals(Created, status)
-                assertJsonEquals("""{"fom": "2018-01-10"}""", responseBody)
-            }
-        )
+    fun `lagring henting av inntekter`() =
+        spesidalerTestApp {
+            inntektsendringer(
+                requestBody = LeggTil,
+                assertResponse = { status, responseBody ->
+                    assertEquals(Created, status)
+                    assertJsonEquals("""{"fom": "2018-01-10"}""", responseBody)
+                },
+            )
 
-        inntekterForBeregning(
-            requestBody = """
+            inntekterForBeregning(
+                requestBody = """
             { 
               "fødselsnummer": "11111111111",
               "InntekterForBeregning": {
@@ -28,9 +28,10 @@ internal class SpesidalerAsyncApiTest: RestApiTest() {
                 "tom": "2020-12-30"
               }
             }""",
-            assertResponse = { status, responseBody ->
-                assertEquals(OK, status)
-                assertJsonEquals("""{
+                assertResponse = { status, responseBody ->
+                    assertEquals(OK, status)
+                    assertJsonEquals(
+                        """{
                   "inntekter": [{
                     "inntektskilde": "999999999",
                     "fom": "2018-01-11",
@@ -55,20 +56,22 @@ internal class SpesidalerAsyncApiTest: RestApiTest() {
                     "tom": "2020-12-30",
                     "årlig": 666666.66
                   }]
-                }""", responseBody)
-            }
-        )
+                }""",
+                        responseBody,
+                    )
+                },
+            )
 
-        inntektsendringer(
-            requestBody = Fjern,
-            assertResponse = { status, responseBody ->
-                assertEquals(Created, status)
-                assertJsonEquals("""{"fom": "2018-01-10"}""", responseBody)
-            }
-        )
+            inntektsendringer(
+                requestBody = Fjern,
+                assertResponse = { status, responseBody ->
+                    assertEquals(Created, status)
+                    assertJsonEquals("""{"fom": "2018-01-10"}""", responseBody)
+                },
+            )
 
-        inntekterForBeregning(
-            requestBody = """
+            inntekterForBeregning(
+                requestBody = """
             { 
               "fødselsnummer": "11111111111",
               "InntekterForBeregning": {
@@ -76,9 +79,10 @@ internal class SpesidalerAsyncApiTest: RestApiTest() {
                 "tom": "2025-01-30"
               }
             }""",
-            assertResponse = { status, responseBody ->
-                assertEquals(OK, status)
-                assertJsonEquals("""{
+                assertResponse = { status, responseBody ->
+                    assertEquals(OK, status)
+                    assertJsonEquals(
+                        """{
                   "inntekter": [{
                     "inntektskilde": "999999999",
                     "fom": "2025-01-01",
@@ -108,23 +112,26 @@ internal class SpesidalerAsyncApiTest: RestApiTest() {
                     "tom": "2020-12-31",
                     "årlig": 666666.66
                   }]
-                }""", responseBody)
-            }
-        )
-    }
+                }""",
+                        responseBody,
+                    )
+                },
+            )
+        }
 
     @Test
-    fun `lagring og henting av inntekter med feil rolle`() = spesidalerTestApp {
-        inntektsendringer(
-            requestBody = LeggTil,
-            accessToken = spesidalerAsyncAccessToken(rolle = "feil-rolle"),
-            assertResponse = { status, _ ->
-                assertEquals(Unauthorized, status)
-            }
-        )
+    fun `lagring og henting av inntekter med feil rolle`() =
+        spesidalerTestApp {
+            inntektsendringer(
+                requestBody = LeggTil,
+                accessToken = spesidalerAsyncAccessToken(rolle = "feil-rolle"),
+                assertResponse = { status, _ ->
+                    assertEquals(Unauthorized, status)
+                },
+            )
 
-        inntekterForBeregning(
-            requestBody = """
+            inntekterForBeregning(
+                requestBody = """
             { 
               "fødselsnummer": "11111111111",
               "InntekterForBeregning": {
@@ -132,12 +139,12 @@ internal class SpesidalerAsyncApiTest: RestApiTest() {
                 "tom": "2018-01-20"
               }
             }""",
-            accessToken = spesidalerAsyncAccessToken(rolle = null),
-            assertResponse = { status, _ ->
-                assertEquals(Unauthorized, status)
-            }
-        )
-    }
+                accessToken = spesidalerAsyncAccessToken(rolle = null),
+                assertResponse = { status, _ ->
+                    assertEquals(Unauthorized, status)
+                },
+            )
+        }
 
     @Language("JSON")
     private val LeggTil = """

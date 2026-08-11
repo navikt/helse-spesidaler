@@ -42,23 +42,20 @@ internal class AppTest : DataSourceBuilderTest() {
         assertEquals(0, finnInntekt("123"))
     }
 
-    private fun slettemelding(fødselsnummer: String) =
-        JsonMessage.newMessage("slett_person", mapOf("fødselsnummer" to fødselsnummer)).toJson()
+    private fun slettemelding(fødselsnummer: String) = JsonMessage.newMessage("slett_person", mapOf("fødselsnummer" to fødselsnummer)).toJson()
 
     private fun opprettTestdata(fødselsnummer: String) {
         opprettInntekt(fødselsnummer)
         assertEquals(1, finnInntekt(fødselsnummer))
     }
 
-    private fun finnInntekt(fødselsnummer: String): Int {
-        return sessionOf(testDataSource.ds).use { session ->
+    private fun finnInntekt(fødselsnummer: String): Int =
+        sessionOf(testDataSource.ds).use { session ->
             session.run(queryOf("SELECT COUNT(1) FROM inntekt WHERE personident = ?", fødselsnummer).map { it.int(1) }.asSingle)
         } ?: 0
-    }
 
     private fun opprettInntekt(fødselsnummer: String) {
         val query = "INSERT INTO inntekt (personident) VALUES (?)"
         sessionOf(testDataSource.ds).use { it.run(queryOf(query, fødselsnummer).asUpdate) }
     }
-
 }

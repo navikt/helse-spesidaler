@@ -9,17 +9,20 @@ import java.net.http.HttpClient
 fun main() {
     val env = System.getenv()
 
-    val spesidalerApiClient = SpesidalerApiClient(
-        httpClient = HttpClient.newHttpClient(),
-        azureTokenProvider = createAzureTokenClientFromEnvironment(env),
-        env = env
-    )
+    val spesidalerApiClient =
+        SpesidalerApiClient(
+            httpClient = HttpClient.newHttpClient(),
+            azureTokenProvider = createAzureTokenClientFromEnvironment(env),
+            env = env,
+        )
 
     val kafkaConfig = AivenConfig.default
     val consumerProducerFactory = ConsumerProducerFactory(kafkaConfig)
 
-    RapidApplication.create(env, consumerProducerFactory = consumerProducerFactory).apply {
-        InntekterForBeregningLøser(this, spesidalerApiClient)
-        InntektsendringerRiver(this, spesidalerApiClient)
-    }.start()
+    RapidApplication
+        .create(env, consumerProducerFactory = consumerProducerFactory)
+        .apply {
+            InntekterForBeregningLøser(this, spesidalerApiClient)
+            InntektsendringerRiver(this, spesidalerApiClient)
+        }.start()
 }

@@ -2,36 +2,42 @@ package no.nav.helse.spesidaler.api.db
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import javax.sql.DataSource
 import org.flywaydb.core.Flyway
 import org.slf4j.LoggerFactory
+import javax.sql.DataSource
 
 internal interface DataSourceBuilder {
     val dataSource: DataSource
+
     fun migrate()
 }
 
-internal class DefaultDataSourceBuilder(env: Map<String, String>): DataSourceBuilder {
+internal class DefaultDataSourceBuilder(
+    env: Map<String, String>,
+) : DataSourceBuilder {
+    private val baseConnectionConfig =
+        HikariConfig().apply {
+            jdbcUrl = env.getValue("DATABASE_JDBC_URL")
+        }
 
-    private val baseConnectionConfig = HikariConfig().apply {
-        jdbcUrl = env.getValue("DATABASE_JDBC_URL")
-    }
-
-    private val migrationConfig = HikariConfig().apply {
-        baseConnectionConfig.copyStateTo(this)
-        maximumPoolSize = 2
-    }
-    private val appConfig = HikariConfig().apply {
-        baseConnectionConfig.copyStateTo(this)
-        maximumPoolSize = 2
-    }
+    private val migrationConfig =
+        HikariConfig().apply {
+            baseConnectionConfig.copyStateTo(this)
+            maximumPoolSize = 2
+        }
+    private val appConfig =
+        HikariConfig().apply {
+            baseConnectionConfig.copyStateTo(this)
+            maximumPoolSize = 2
+        }
 
     override val dataSource by lazy { HikariDataSource(appConfig) }
 
     override fun migrate() {
         logger.info("Migrerer database")
         HikariDataSource(migrationConfig).use {
-            Flyway.configure()
+            Flyway
+                .configure()
                 .dataSource(it)
                 .lockRetryCount(-1)
                 .load()

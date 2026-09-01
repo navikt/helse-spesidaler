@@ -7,7 +7,7 @@ tbd-libs = "20260820.1510"
 [libraries]
 flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
-cloud-sql-postgres-socket-factory = "com.google.cloud.sql:postgres-socket-factory:1.29.0"
+cloud-sql-postgres-socket-factory = "com.google.cloud.sql:postgres-socket-factory:1.30.0"
 jackson-datatype-jsr310 = { group = "com.fasterxml.jackson.datatype", name = "jackson-datatype-jsr310" }
 kotliquery = "com.github.seratch:kotliquery:1.9.1"
 ktor-server-auth = { module = "io.ktor:ktor-server-auth" }

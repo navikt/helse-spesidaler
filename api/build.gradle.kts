@@ -1,8 +1,8 @@
 plugins {
-    id("no.nav.helse.sas.sas-deployable")
+    id("no.nav.sykepenger.deployable")
 }
 
-sasDeployable {
+sykepengerDeployable {
     mainClass = "no.nav.helse.spesidaler.api.AppKt"
     imageName = "helse-spesidaler-api"
 }
@@ -23,7 +23,7 @@ dependencies {
     testImplementation(libs.tbd.libs.postgres.testdatabaser)
     testImplementation(libs.tbd.libs.naisful.test.app)
     testImplementation(libs.tbd.libs.signed.jwt.issuer.test) {
-        // Standard-wiremock kjører på Jetty 11, som ikke finnes i Jetty-BOM-en fra sas-kotlin
+        // Standard-wiremock kjører på Jetty 11, som ikke finnes i Jetty-BOM-en fra no.nav.sykepenger.kotlin
         exclude(group = "org.wiremock", module = "wiremock")
     }
     testImplementation(libs.wiremock)

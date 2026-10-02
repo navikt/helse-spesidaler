@@ -1,0 +1,25 @@
+spec:
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_17
+        diskAutoresize: true
+        tier: db-custom-1-3840
+        name: spesidaler
+        databases:
+          - name: spesidaler
+            envVarPrefix: DATABASE
+        flags:
+          - name: cloudsql.enable_pgaudit
+            value: "on"
+          - name: pgaudit.log
+            value: "write,ddl,role"
+          - name: pgaudit.log_parameter
+            value: "on"
+          - name: pgaudit.log_relation
+            value: "on"
+  azure:
+    application:
+      tenant: nav.no
+  ingresses:
+    - "https://spesidaler.ansatt.nav.no"
+    - "https://spesidaler.intern.nav.no"

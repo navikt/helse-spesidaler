@@ -6,28 +6,6 @@ metadata:
   labels:
     team: tbd
 spec:
-  gcp:
-    sqlInstances:
-      - type: POSTGRES_17
-        diskAutoresize: true
-        tier: {{tier}}
-        name: spesidaler
-        databases:
-          - name: spesidaler
-            envVarPrefix: DATABASE
-            users:
-              {{#each database_users }}
-              - name: "{{this}}"
-              {{/each}}
-        flags:
-          - name: cloudsql.enable_pgaudit
-            value: "{{pgAudit}}"
-          - name: pgaudit.log
-            value: "write,ddl,role"
-          - name: pgaudit.log_parameter
-            value: "on"
-          - name: pgaudit.log_relation
-            value: "on"
   strategy:
     type: RollingUpdate
   replicas:
@@ -58,7 +36,6 @@ spec:
   azure:
     application:
       enabled: true
-      tenant: {{tenant}}
   accessPolicy:
     inbound:
       rules:
@@ -71,7 +48,3 @@ spec:
       rules:
         - application: logging
           namespace: nais-system
-  ingresses:
-    {{#each ingresses }}
-    - "{{this}}"
-    {{/each}}

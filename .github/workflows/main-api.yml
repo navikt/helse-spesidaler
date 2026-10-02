@@ -15,9 +15,8 @@ on:
       - '!.github/workflows/standard-dependabot-auto-merge.yml'
       - '!.github/workflows/standard-dependency-submission.yml'
       # Ressursene som deployes av denne workflowen
-      - '.nais/api.yml'
-      - '.nais/api-dev.json'
-      - '.nais/api-prod.json'
+      - '.nais/api.yaml'
+      - '.nais/api.*.yaml'
       # Spesielt for denne tjenesten ellers
       - '!.github/workflows/standard-pr.yml'
       - '!.github/workflows/main-async.yml'
@@ -61,12 +60,11 @@ jobs:
   deploy-dev:
     name: Deploy til dev
     needs: bygg-image
-    uses: navikt/sykepenger-github-workflows/.github/workflows/deploy.yml@77c349d62b631cf0fedc02278c68abd33bc8ea5b # v1.0.10
+    uses: navikt/sykepenger-github-workflows/.github/workflows/deploy-v2.yml@77c349d62b631cf0fedc02278c68abd33bc8ea5b # v1.0.10
     with:
-      CLUSTER: dev-gcp
-      RESOURCE: .nais/api.yml
-      VARS: .nais/api-dev.json
-      WORKLOAD_IMAGE: ${{ needs.bygg-image.outputs.image_ref }}
+      manifest: .nais/api.yaml
+      environment: dev-gcp
+      image: ${{ needs.bygg-image.outputs.image_ref }}
     permissions:
       contents: read
       id-token: write # for nais login
@@ -74,12 +72,11 @@ jobs:
   deploy-prod:
     name: Deploy til prod
     needs: bygg-image
-    uses: navikt/sykepenger-github-workflows/.github/workflows/deploy.yml@77c349d62b631cf0fedc02278c68abd33bc8ea5b # v1.0.10
+    uses: navikt/sykepenger-github-workflows/.github/workflows/deploy-v2.yml@77c349d62b631cf0fedc02278c68abd33bc8ea5b # v1.0.10
     with:
-      CLUSTER: prod-gcp
-      RESOURCE: .nais/api.yml
-      VARS: .nais/api-prod.json
-      WORKLOAD_IMAGE: ${{ needs.bygg-image.outputs.image_ref }}
+      manifest: .nais/api.yaml
+      environment: prod-gcp
+      image: ${{ needs.bygg-image.outputs.image_ref }}
     permissions:
       contents: read
       id-token: write # for nais login

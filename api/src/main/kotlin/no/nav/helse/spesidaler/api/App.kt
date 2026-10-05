@@ -1,9 +1,6 @@
 package no.nav.helse.spesidaler.api
 
 import com.auth0.jwk.JwkProviderBuilder
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.naisful.naisApp
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -19,14 +16,12 @@ import no.nav.helse.spesidaler.api.db.DefaultDataSourceBuilder
 import no.nav.helse.spesidaler.api.rest_api.InntekterForBeregningApi
 import no.nav.helse.spesidaler.api.rest_api.InntektsendringerApi
 import org.slf4j.LoggerFactory
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.URI
 
 private val logg = LoggerFactory.getLogger(::main.javaClass)
 internal val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-private val objectmapper =
-    jacksonObjectMapper()
-        .registerModules(JavaTimeModule())
-        .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+private val objectmapper = jacksonObjectMapper()
 
 fun main() {
     Thread.currentThread().setUncaughtExceptionHandler { _, e ->

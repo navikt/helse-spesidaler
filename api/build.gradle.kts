@@ -13,7 +13,6 @@ dependencies {
     implementation(libs.ktor.server.auth.jwt) {
         exclude(group = "junit")
     }
-    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.tbd.libs.naisful.app)
     implementation(libs.tbd.libs.sql.dsl)
     implementation(libs.flyway.database.postgresql)

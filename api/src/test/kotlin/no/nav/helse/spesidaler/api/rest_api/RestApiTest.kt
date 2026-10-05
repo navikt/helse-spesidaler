@@ -1,7 +1,5 @@
 package no.nav.helse.spesidaler.api.rest_api
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.naisful.test.naisfulTestApp
 import com.github.navikt.tbd_libs.signed_jwt_issuer_test.Issuer
 import io.micrometer.prometheusmetrics.PrometheusConfig
@@ -13,6 +11,7 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 @TestInstance(PER_CLASS)
 internal abstract class RestApiTest {
@@ -48,7 +47,7 @@ internal abstract class RestApiTest {
                         ),
                 )
             },
-            objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule()),
+            objectMapper = jacksonObjectMapper(),
             meterRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT),
             testblokk = {
                 testblokk(RestApiTestContext(issuer, client))

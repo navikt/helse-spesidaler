@@ -1,6 +1,5 @@
 package no.nav.helse.spesidaler.async
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
@@ -10,6 +9,7 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
 import java.util.*
 
 internal class InntektsendringerRiver(
@@ -24,7 +24,7 @@ internal class InntektsendringerRiver(
                     it.forbid("inntektsendringFom") // Denne klasker Spesidaler på selv
                 }
                 validate {
-                    it.require("@id") { id -> UUID.fromString(id.asText()) }
+                    it.require("@id") { id -> UUID.fromString(id.asString()) }
                     it.requireKey("fødselsnummer")
                     it.requireArray("inntektsendringer") {
                         requireKey("inntektskilde")
@@ -51,7 +51,7 @@ internal class InntektsendringerRiver(
         meterRegistry: MeterRegistry,
     ) {
         sikkerlogg.info("Mottok inntektsendringer:\n\t${packet.toJson()}")
-        val fødselsnummer = packet["fødselsnummer"].asText()
+        val fødselsnummer = packet["fødselsnummer"].asString()
 
         val inntektsendringFom = inntektsendringer(packet)
 

@@ -33,7 +33,7 @@ internal class SlettPersonRiver(
         metadata: MessageMetadata,
         meterRegistry: MeterRegistry,
     ) {
-        val fødselsnummer = packet["fødselsnummer"].asText()
+        val fødselsnummer = packet["fødselsnummer"].asString()
 
         sikkerlogg.info("Sletter inntekter for person med fødselsnummer: $fødselsnummer")
 

@@ -1,12 +1,12 @@
 package no.nav.helse.spesidaler.async
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ArrayNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.azure.AzureTokenProvider
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
 import com.github.navikt.tbd_libs.result_object.getOrThrow
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.node.ArrayNode
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -28,7 +28,7 @@ internal class SpesidalerApiClient(
             post(
                 endepunkt = "inntekter-for-beregning",
                 requestBody = packet.toJson(),
-                callId = UUID.fromString(packet["@id"].asText()),
+                callId = UUID.fromString(packet["@id"].asString()),
                 forventetResponseCode = 200,
             )
         return responseJson.path("inntekter") as ArrayNode
@@ -39,7 +39,7 @@ internal class SpesidalerApiClient(
             post(
                 endepunkt = "inntektsendringer",
                 requestBody = packet.toJson(),
-                callId = UUID.fromString(packet["@id"].asText()),
+                callId = UUID.fromString(packet["@id"].asString()),
                 forventetResponseCode = 201,
             )
         return responseJson.path("fom").asLocalDate()

@@ -1,6 +1,5 @@
 package no.nav.helse.spesidaler.api.rest_api
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.ktor.http.*
 import io.ktor.http.ContentType.Application.Json
 import io.ktor.http.HttpStatusCode.Companion.OK
@@ -16,6 +15,7 @@ import no.nav.helse.spesidaler.api.Periode.Companion.til
 import no.nav.helse.spesidaler.api.Personident
 import no.nav.helse.spesidaler.api.sikkerlogg
 import org.intellij.lang.annotations.Language
+import tools.jackson.module.kotlin.jacksonObjectMapper
 import java.time.LocalDate
 import javax.sql.DataSource
 
@@ -31,10 +31,10 @@ internal suspend fun ApplicationCall.respondJson(
 internal fun Route.InntekterForBeregningApi(dataSource: () -> DataSource) {
     post("/inntekter-for-beregning") {
         val request = call.requestJson()
-        val personident = Personident(request["fødselsnummer"].asText())
+        val personident = Personident(request["fødselsnummer"].asString())
         val periode =
             request.path("InntekterForBeregning").let {
-                LocalDate.parse(it.path("fom").asText()) til LocalDate.parse(it.path("tom").asText())
+                LocalDate.parse(it.path("fom").asString()) til LocalDate.parse(it.path("tom").asString())
             }
         val gjeldendeInntekter =
             GjeldendeInntekter(personident, periode, dataSource())

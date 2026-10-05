@@ -1,6 +1,5 @@
 package no.nav.helse.spesidaler.api.rest_api
 
-import com.fasterxml.jackson.databind.JsonNode
 import io.ktor.http.HttpStatusCode.Companion.Created
 import io.ktor.server.plugins.*
 import io.ktor.server.routing.*
@@ -9,6 +8,7 @@ import no.nav.helse.spesidaler.api.Inntektsendringer
 import no.nav.helse.spesidaler.api.Inntektskilde
 import no.nav.helse.spesidaler.api.Personident
 import no.nav.helse.spesidaler.api.ÅpenPeriode
+import tools.jackson.databind.JsonNode
 import java.time.LocalDate
 import javax.sql.DataSource
 import kotlin.math.roundToInt
@@ -16,17 +16,17 @@ import kotlin.math.roundToInt
 internal fun Route.InntektsendringerApi(dataSource: () -> DataSource) {
     post("/inntektsendringer") {
         val request = call.requestJson()
-        val personident = Personident(request["fødselsnummer"].asText())
+        val personident = Personident(request["fødselsnummer"].asString())
         val inntektsendringer =
-            request.path("inntektsendringer").map { inntektsendring ->
+            request.path("inntektsendringer").values().map { inntektsendring ->
                 Inntektsendringer.Inntektsendring(
-                    kilde = Inntektskilde(inntektsendring["inntektskilde"].asText()),
+                    kilde = Inntektskilde(inntektsendring["inntektskilde"].asString()),
                     nullstill =
-                        inntektsendring.path("nullstill").map { nullstillingsperiode ->
+                        inntektsendring.path("nullstill").values().map { nullstillingsperiode ->
                             nullstillingsperiode.åpenPeriode()
                         },
                     inntekter =
-                        inntektsendring.path("inntekter").map { inntektsperiode ->
+                        inntektsendring.path("inntekter").values().map { inntektsperiode ->
                             Inntektsendringer.Inntektsperiode(
                                 periode = inntektsperiode.åpenPeriode(),
                                 beløp = inntektsperiode.beløp(),
@@ -42,8 +42,8 @@ internal fun Route.InntektsendringerApi(dataSource: () -> DataSource) {
 
 private fun JsonNode.åpenPeriode() =
     ÅpenPeriode(
-        fom = LocalDate.parse(path("fom").asText()),
-        tom = path("tom").takeIf { it.isTextual }?.let { LocalDate.parse(it.asText()) },
+        fom = LocalDate.parse(path("fom").asString()),
+        tom = path("tom").takeIf { it.isString }?.let { LocalDate.parse(it.asString()) },
     )
 
 private fun JsonNode.ører() = this.takeIf { it.isNumber }?.asDouble()?.let { (it * 100.0).roundToInt() }

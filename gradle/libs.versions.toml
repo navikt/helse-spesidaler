@@ -2,7 +2,7 @@
 flyway = "13.8.0"
 hikaricp = "7.1.0"
 sykepengerGradlePlugins = "20261001.1830"
-tbd-libs = "20261002.1227"
+tbd-libs = "20261005.1432"
 
 [libraries]
 flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }

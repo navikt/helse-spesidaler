@@ -1,7 +1,7 @@
 [versions]
-flyway = "13.10.3"
+flyway = "13.11.1"
 hikaricp = "7.1.0"
-sykepengerGradlePlugins = "20261026.1611"
+sykepengerGradlePlugins = "20261028.1441"
 tbd-libs = "20261013.1613"
 
 [libraries]
